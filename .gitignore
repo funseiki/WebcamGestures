@@ -1,0 +1,9 @@
+# /WebcamGestures
+/WebcamGestures/*.suo
+/WebcamGestures/*.sdf
+/WebcamGestures/Debug
+/WebcamGestures/Release
+
+# /WebcamGestures/WebcamGestures
+/WebcamGestures/WebcamGestures/Debug
+/WebcamGestures/WebcamGestures/Release
