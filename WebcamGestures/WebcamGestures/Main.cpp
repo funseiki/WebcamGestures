@@ -13,8 +13,28 @@
 #include <iostream>
 
 /** Namespaces **/
-using namespace std;
 using namespace cv;
+
+void DetectFist(Mat & cameraFrame, CascadeClassifier & classifier)
+{
+	Point pt1, pt2;
+	vector<Rect> detectedObjects;
+	double scaleFactor = 1.1;
+	classifier.detectMultiScale(cameraFrame, detectedObjects, scaleFactor, CV_HAAR_DO_CANNY_PRUNING);
+	for(int i = 0; i < detectedObjects.size(); i++)
+	{
+		Rect currentHand = detectedObjects[i];
+		// Set the bounding box corners
+		pt1.x = currentHand.x * scaleFactor;
+		pt2.x = (currentHand.x + currentHand.width)*scaleFactor;
+		pt1.y = currentHand.y*scaleFactor;
+		pt2.y = (currentHand.y + currentHand.height)*scaleFactor;
+
+		// Draw the rectangle around the detected hand
+		rectangle(cameraFrame, pt1, pt2, CV_RGB(200, 0, 0), 1, 8, 0);
+	}
+
+}
 
 void CameraLoop()
 {
@@ -28,7 +48,7 @@ void CameraLoop()
 	// Load the classifier
 	if(!cascade.load(fistClassifier))
 	{
-		cout << "Classifier " << fistClassifier << " failed to load." << endl;
+		std::cout << "Classifier " << fistClassifier << " failed to load." << std::endl;
 		return;
 	}
 
@@ -36,7 +56,7 @@ void CameraLoop()
 	camera.open(0);
 	if(!camera.isOpened())
 	{
-		cerr << "ERROR: NO CAMERA AVAILABLE!?" << endl;
+		std::cerr << "ERROR: NO CAMERA AVAILABLE!?" << std::endl;
 		return;
 	}
 
@@ -53,14 +73,15 @@ void CameraLoop()
 
 		if(cameraFrame.empty())
 		{
-			cerr << "ERROR: NO CAMERA FRAME!?" << endl;
+			std::cerr << "ERROR: NO CAMERA FRAME!?" << std::endl;
 			exit(1);
 		}
 
 		// Output image to be drawn onto
 		Mat displayedFrame(cameraFrame.size(), CV_8UC3);
 
-		cameraFrame.copyTo(displayedFrame);
+		flip(cameraFrame, displayedFrame, 1);
+		DetectFist(displayedFrame, cascade);
 
 		// Display the interesting thing
 		imshow("Cam", displayedFrame);
