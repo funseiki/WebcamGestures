@@ -80,7 +80,8 @@ void CameraLoop()
 		// Output image to be drawn onto
 		Mat displayedFrame(cameraFrame.size(), CV_8UC3);
 
-		flip(cameraFrame, displayedFrame, 1);
+		cameraFrame.copyTo(displayedFrame);
+		//flip(cameraFrame, displayedFrame, 1);
 		DetectFist(displayedFrame, cascade);
 
 		// Display the interesting thing
