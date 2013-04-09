@@ -15,40 +15,70 @@
 /** Namespaces **/
 using namespace cv;
 
-void DetectFist(Mat & cameraFrame, CascadeClassifier & classifier)
+void DetectClassifers(Mat & cameraFrame, vector<CascadeClassifier> & classifiers)
 {
 	Point pt1, pt2;
-	vector<Rect> detectedObjects;
 	double scaleFactor = 1.1;
-	classifier.detectMultiScale(cameraFrame, detectedObjects, scaleFactor, CV_HAAR_DO_CANNY_PRUNING);
-	for(int i = 0; i < detectedObjects.size(); i++)
-	{
-		Rect currentHand = detectedObjects[i];
-		// Set the bounding box corners
-		pt1.x = currentHand.x * scaleFactor;
-		pt2.x = (currentHand.x + currentHand.width)*scaleFactor;
-		pt1.y = currentHand.y*scaleFactor;
-		pt2.y = (currentHand.y + currentHand.height)*scaleFactor;
 
-		// Draw the rectangle around the detected hand
-		rectangle(cameraFrame, pt1, pt2, CV_RGB(200, 0, 0), 1, 8, 0);
+	// Iterate over each classifier and see if we find anything
+	for(vector<CascadeClassifier>::iterator it = classifiers.begin(); it != classifiers.end();
+			it++)
+	{
+		vector<Rect> detectedObjects;
+		it->detectMultiScale(cameraFrame, detectedObjects, scaleFactor, CV_HAAR_DO_CANNY_PRUNING);
+
+		// Draw a rectangle around the detected objects
+		for(int i = 0; i < detectedObjects.size(); i++)
+		{
+			Rect currentHand = detectedObjects[i];
+			// Set the bounding box corners
+			pt1.x = currentHand.x * scaleFactor;
+			pt2.x = (currentHand.x + currentHand.width)*scaleFactor;
+			pt1.y = currentHand.y*scaleFactor;
+			pt2.y = (currentHand.y + currentHand.height)*scaleFactor;
+
+			// Draw the rectangle around the detected hand
+			rectangle(cameraFrame, pt1, pt2, CV_RGB(200, 0, 0), 1, 8, 0);
+		}
 	}
 
 }
 
-void CameraLoop()
+int loadClassifiers(vector<CascadeClassifier> & classifiers)
 {
 	// Cascade files
 	String fistClassifier = "Classifiers\\fist.xml";
+	String palmClassifer = "Classifiers\\palm.xml";
+
+	vector<String> files;
+	files.push_back(fistClassifier);
+	files.push_back(palmClassifer);
+
+	for(vector<String>::iterator it = files.begin();
+		it != files.end(); it++)
+	{
+		CascadeClassifier c;
+		// Load the classifier
+		if(!c.load(*it))
+		{
+			std::cout << "Classifier " << *it << " failed to load." << std::endl;
+			return 0;
+		}
+		classifiers.push_back(c);
+	}
+
+	return 1;
+}
+
+void CameraLoop()
+{
 
 	// 2.0 Api
 	VideoCapture camera;
-	CascadeClassifier cascade;
 
-	// Load the classifier
-	if(!cascade.load(fistClassifier))
+	vector<CascadeClassifier> classifiers;
+	if(!loadClassifiers(classifiers))
 	{
-		std::cout << "Classifier " << fistClassifier << " failed to load." << std::endl;
 		return;
 	}
 
@@ -81,8 +111,7 @@ void CameraLoop()
 		Mat displayedFrame(cameraFrame.size(), CV_8UC3);
 
 		cameraFrame.copyTo(displayedFrame);
-		//flip(cameraFrame, displayedFrame, 1);
-		DetectFist(displayedFrame, cascade);
+		DetectClassifers(displayedFrame, classifiers);
 
 		// Display the interesting thing
 		imshow("Cam", displayedFrame);
