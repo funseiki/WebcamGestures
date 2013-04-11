@@ -8,3 +8,11 @@
 # /WebcamGestures/WebcamGestures
 /WebcamGestures/WebcamGestures/Debug
 /WebcamGestures/WebcamGestures/Release
+
+# /WebcamGestures/BackgroundSubtraction/
+/WebcamGestures/BackgroundSubtraction/Release/
+/WebcamGestures/BackgroundSubtraction/Debug/
+
+# /WebcamGestures/ConvexDetection/
+/WebcamGestures/ConvexDetection/Release/
+/WebcamGestures/ConvexDetection/Debug/

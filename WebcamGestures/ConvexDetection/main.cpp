@@ -44,7 +44,7 @@ void hull(Mat src )
 		drawContours( drawing, hull, i, Scalar(255), 1, 8, vector<Vec4i>(), 0, Point() );
 	}
 
-    // Show in a window
+	// Show in a window
 	imshow( "Hull", drawing );
 	waitKey(0);
 
@@ -120,23 +120,23 @@ int findBiggestContour( vector < vector<Point> > contours)
 // So multiple contours are 2D vectors of points
 
 	// Index of largest contour
-    int indexOfBiggestContour = -1;
+	int indexOfBiggestContour = -1;
 
 	// Size of contour (temp var)
-    int sizeOfBiggestContour = 0;
+	int sizeOfBiggestContour = 0;
 
 	// Iterate through each contour
-    for (int i = 0; i < contours.size(); i++)
+	for (int i = 0; i < contours.size(); i++)
 	{
 		// Pretty straigh forward! Find the largest contour
-        if(contours[i].size() > sizeOfBiggestContour)
+		if(contours[i].size() > sizeOfBiggestContour)
 		{
-            sizeOfBiggestContour = contours[i].size();
-            indexOfBiggestContour = i;
-        }
-    }
+			sizeOfBiggestContour = contours[i].size();
+			indexOfBiggestContour = i;
+		}
+	}
 
-    return indexOfBiggestContour;
+	return indexOfBiggestContour;
 }
 
 
@@ -144,51 +144,51 @@ int main(int argc, char **argv)
 {
 
 	// Open image
-    Mat src = imread("hand.jpg");
-    if (src.empty())
+	Mat src = imread("fist.jpg");
+	if (src.empty())
 	{
 		cerr<<"Can't open file";
-        return -1;
+		return -1;
 	}
 
 	// Blur image (Helps the skin detection)
 	// Blur window size 5x5
-    blur( src, src, Size(5,5) );
+	blur( src, src, Size(5,5) );
 
 	// Convert to HSV
-    Mat hsv;
-    cvtColor(src, hsv, CV_BGR2HSV);
+	Mat hsv;
+	cvtColor(src, hsv, CV_BGR2HSV);
 
 	// Threshold for skin.
 	// LOT of trial-and-error here
-    Mat bw;
-    inRange(hsv, Scalar(0, 10, 170), Scalar(50, 255, 255), bw);
+	Mat bw;
+	inRange(hsv, Scalar(0, 10, 170), Scalar(50, 255, 255), bw);
 
 	// Show images
-    imshow("src", src);
-    imshow("dst", bw);
+	imshow("src", src);
+	imshow("dst", bw);
 
 	// Vector of points for contours
-    vector<vector<Point> > contours;
+	vector<vector<Point> > contours;
 	// Hierarchy for contour detection
-    vector<Vec4i> hierarchy;
+	vector<Vec4i> hierarchy;
 
 	// Find contours
-    findContours( bw, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+	findContours( bw, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
 
 	// Find the largest contour (assume, hand is largest)
 	int s = findBiggestContour(contours);
 
 	// Draw and fill detector contour
-    Mat drawing = Mat::zeros( src.size(), CV_8UC1 );
-    drawContours( drawing, contours, s, Scalar(255), -1, 8, hierarchy, 0, Point() );
+	Mat drawing = Mat::zeros( src.size(), CV_8UC1 );
+	drawContours( drawing, contours, s, Scalar(255), -1, 8, hierarchy, 0, Point() );
 
 	//Show the contour
-    imshow("drw", drawing);
+	imshow("drw", drawing);
 
 	// Detect hull and draw it
-    hull(drawing);
+	hull(drawing);
 
-    waitKey(0);
-    return 0;
+	waitKey(0);
+	return 0;
 }
