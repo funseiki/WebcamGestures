@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1365617338 source:c:\users\ashutosh\code\computervision_project\convexdetection\main.cpp
+	"opencv2/highgui/highgui.hpp"
+	"opencv2/imgproc/imgproc.hpp"
+	<iostream>
+	<stdio.h>
+	<stdlib.h>
+
