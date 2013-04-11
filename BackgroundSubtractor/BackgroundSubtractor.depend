@@ -1,6 +1,0 @@
-# depslib dependency file v1.0
-1365706977 source:c:\users\ashutosh\code\computervision_project\backgroundsubtractor\main.cpp
-	<opencv2/opencv.hpp>
-	<iostream>
-	<vector>
-
