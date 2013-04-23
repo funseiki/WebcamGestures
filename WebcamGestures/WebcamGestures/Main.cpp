@@ -230,6 +230,7 @@ void detectHand(Mat src)
 	int biggestForeground = findBiggestContour(foregroundContours);
 
 	std::cout << "6" << std::endl;
+	std::cout << "AHA! "<< biggestForeground<< std::endl;
 	Rect foregroundBound = boundingRect(foregroundContours[biggestForeground]);
 
 	std::cout << "7" << std::endl;
