@@ -13,7 +13,15 @@ int main(int argc, char *argv[])
 
 	VideoCapture camera;
 	int cameraNumber = 0;
-	camera.open("cam.mp4");
+	//camera.open("cam.mp4");
+
+	// Open the camera
+	camera.open(0);
+	if(!camera.isOpened())
+	{
+		std::cerr << "ERROR: NO CAMERA AVAILABLE!?" << std::endl;
+		return 1;
+	}
 
 	// Create an object of the background subtractor
 	BackgroundSubtractorMOG2 background;
