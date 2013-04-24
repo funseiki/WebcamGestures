@@ -86,6 +86,7 @@ void hull(Mat src )
 	vector<Vec4i> hierarchy;
 
 	// Find contours
+	std::cout<<"h1";
 	findContours( src, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
 
 	// Convext hull is vector of points
@@ -97,7 +98,7 @@ void hull(Mat src )
 	{
 		convexHull( Mat(contours[i]), hull[i], false );
 	}
-
+	std::cout<<"h2";
 	// Draw contours + hull results
 	Mat drawing = Mat::zeros( src.size(), CV_8UC3 );
 
@@ -108,7 +109,7 @@ void hull(Mat src )
 		drawContours( drawing, contours, i, Scalar(255), 1, 8, vector<Vec4i>(), 0, Point() );
 		drawContours( drawing, hull, i, Scalar(255), 1, 8, vector<Vec4i>(), 0, Point() );
 	}
-
+	std::cout<<"h3";
 	// Show in a window
 	imshow( "Hull", drawing );
 
@@ -130,15 +131,16 @@ void hull(Mat src )
 
 	// I've called the convexHull function with a 4th parameter, explicitly telling it NOT to return points
 	// Instead indices are returned
+	std::cout<<"h3.1";
 	for(int i= 0; i<contours.size(); i++)
 		convexHull( Mat(contours[i]), hulls[i], false , false);
-
+	std::cout<<"h3.2";
 	// Now, the set of defects we get will be the index of a point in the contour.
 	// It save space and just works!
 	// In the "C" version, defects are returned as a vector of CvPoints
 	for(int i= 0; i<contours.size(); i++)
 		convexityDefects(contours[i], hulls[i], convexityDefectsSet);
-
+	std::cout<<"h4";
 	// defectIterator (Java style, to keep Ashwin happy! ;p
 	// For each defect found
 	for (int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
@@ -170,6 +172,7 @@ void hull(Mat src )
 		circle(drawing, contours[0][defectPtIdx], 5, Scalar(0,0,255));
 	}
 	// Show and save!
+	std::cout<<"h5";
 	imshow("Defects", drawing);
 }
 
@@ -199,7 +202,7 @@ int findBiggestContour( vector < vector<Point> > contours)
 	return indexOfBiggestContour;
 }
 
-void detectHand(Mat src)
+bool detectHand(Mat src)
 {
 	std::cout << "1" << std::endl;
 	Mat back;	// background frame
@@ -216,14 +219,14 @@ void detectHand(Mat src)
 	std::cout << "3" << std::endl;
 	// Get the background. History is colleceted by background object
 	background.getBackgroundImage(back);
-	imshow("bg", back);
+	//imshow("bg", back);
 
 	std::cout << "4" << std::endl;
 	// Erode and Dilate to remove noise (seems to work)
 	erode(fore,fore,cv::Mat());
 	dilate(fore,fore,cv::Mat());
 
-	imshow("fg", fore);
+	//imshow("fg", fore);
 	std::cout << "5" << std::endl;
 	// Find and draw Contours
 	findContours(fore,foregroundContours, CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
@@ -231,6 +234,7 @@ void detectHand(Mat src)
 
 	std::cout << "6" << std::endl;
 	std::cout << "AHA! "<< biggestForeground<< std::endl;
+	if(biggestForeground == -1) return false;
 	Rect foregroundBound = boundingRect(foregroundContours[biggestForeground]);
 
 	std::cout << "7" << std::endl;
@@ -271,12 +275,13 @@ void detectHand(Mat src)
 
 	std::cout << "12" << std::endl;
 	//Show the contour
-	imshow("drw", drawing);
+	//imshow("drw", drawing);
 
 	// Detect hull and draw it
 	hull(drawing);
 
 	std::cout << "13" << std::endl;
+	return true;
 }
 
 void CameraLoop()
@@ -320,11 +325,11 @@ void CameraLoop()
 		Mat displayedFrame(cameraFrame.size(), CV_8UC3);
 
 		cameraFrame.copyTo(displayedFrame);
-		detectHand(displayedFrame);
+		if(!detectHand(displayedFrame)) continue;
 		//DetectClassifers(displayedFrame, classifiers);
 
 		// Display the interesting thing
-		imshow("Cam", displayedFrame);
+		//imshow("Cam", displayedFrame);
 
 		char keypress = waitKey(33);
 		if(keypress == 27)
