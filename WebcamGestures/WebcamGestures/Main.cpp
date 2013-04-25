@@ -22,64 +22,45 @@ RNG rng(12345);
 // Create an object of the background subtractor
 BackgroundSubtractorMOG2 background;
 
-void DetectClassifers(Mat & cameraFrame, vector<CascadeClassifier> & classifiers)
+void getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<int> & startInds, vector<int> & endInds, vector<int> & defectInds)
 {
-	Point pt1, pt2;
-	double scaleFactor = 1.1;
-
-	// Iterate over each classifier and see if we find anything
-	for(vector<CascadeClassifier>::iterator it = classifiers.begin(); it != classifiers.end();
-			it++)
+	vector<double>depths;
+	for (int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
 	{
-		vector<Rect> detectedObjects;
-		it->detectMultiScale(cameraFrame, detectedObjects, scaleFactor, CV_HAAR_DO_CANNY_PRUNING);
-
-		// Draw a rectangle around the detected objects
-		for(int i = 0; i < detectedObjects.size(); i++)
-		{
-			Rect currentHand = detectedObjects[i];
-			// Set the bounding box corners
-			pt1.x = currentHand.x * scaleFactor;
-			pt2.x = (currentHand.x + currentHand.width)*scaleFactor;
-			pt1.y = currentHand.y*scaleFactor;
-			pt2.y = (currentHand.y + currentHand.height)*scaleFactor;
-
-			// Draw the rectangle around the detected hand
-			rectangle(cameraFrame, pt1, pt2, CV_RGB(200, 0, 0), 1, 8, 0);
-		}
+		int startIdx = convexityDefectsSet[defectIterator].val[0];
+		int endIdx = convexityDefectsSet[defectIterator].val[1];
+		int defectPtIdx = convexityDefectsSet[defectIterator].val[2];
+		double depth = (double)convexityDefectsSet[defectIterator].val[3]/256.0f;  // see documentation link below why this
+		depths.push_back(depth);
 	}
 
-}
+	Scalar average_depth = mean(depths);
+	double threshold = average_depth[0]/10;
 
-int loadClassifiers(vector<CascadeClassifier> & classifiers)
-{
-	// Cascade files
-	String fistClassifier = "Classifiers\\fist.xml";
-	String palmClassifer = "Classifiers\\palm.xml";
-
-	vector<String> files;
-	files.push_back(fistClassifier);
-	files.push_back(palmClassifer);
-
-	for(vector<String>::iterator it = files.begin();
-		it != files.end(); it++)
+	// defectIterator (Java style, to keep Ashwin happy! ;p
+	// For each defect found
+	for (int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
 	{
-		CascadeClassifier c;
-		// Load the classifier
-		if(!c.load(*it))
+		// Get the indices from the vector structure returned
+		// Each defect has a start, end and deep point
+		// Also, depth from start to the deep point
+		int startIdx = convexityDefectsSet[defectIterator].val[0];
+		int endIdx = convexityDefectsSet[defectIterator].val[1];
+		int defectPtIdx = convexityDefectsSet[defectIterator].val[2];
+		double depth = (double)convexityDefectsSet[defectIterator].val[3]/256.0f;  // see documentation link below why this
+		if(depth >= threshold)
 		{
-			std::cout << "Classifier " << *it << " failed to load." << std::endl;
-			return 0;
+			startInds.push_back(startIdx);
+			endInds.push_back(endIdx);
+			defectInds.push_back(defectPtIdx);
 		}
-		classifiers.push_back(c);
+		std::cout << depth << std::endl;
 	}
-
-	return 1;
 }
 
  // Find and display Convex Hull and defects
  // Input is contour of image
-void hull(Mat src )
+void findHull(Mat src )
 {
 	// Contours and it's heirarchy (look at OpenCV ref)
 	vector<vector<Point> > contours;
@@ -141,36 +122,30 @@ void hull(Mat src )
 	for(int i= 0; i<contours.size(); i++)
 		convexityDefects(contours[i], hulls[i], convexityDefectsSet);
 	std::cout<<"h4";
-	// defectIterator (Java style, to keep Ashwin happy! ;p
-	// For each defect found
-	for (int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
+
+	vector<int> startInds;
+	vector<int> endInds;
+	vector<int> defectInds;
+
+	// Each index is a point in the contour.
+	// Since I know there is only 1 contour... 1st index is 0.
+	getDefects(convexityDefectsSet, startInds, endInds, defectInds);
+
+	for(int i = 0; i<startInds.size(); i++)
 	{
-		// Get the indices from the vector structure returned
-		// Each defect has a start, end and deep point
-		// Also, depth from start to the deep point
-		int startIdx = convexityDefectsSet[defectIterator].val[0];
-		int endIdx = convexityDefectsSet[defectIterator].val[1];
-		int defectPtIdx = convexityDefectsSet[defectIterator].val[2];
-		double depth = (double)convexityDefectsSet[defectIterator].val[3]/256.0f;  // see documentation link below why this
-
-		// Each index is a point in the contour.
-		// Since I know there is only 1 contour... 1st index is 0.
-
 		// Draw a yellow line from start to defect
-		line(drawing, contours[0][startIdx], contours[0][defectPtIdx], Scalar(0,255,255), 1);
-
-		// Draw a red line from start to end
-		//line(drawing, contours[0][startIdx], contours[0][endIdx], Scalar(0,0,255), 1);
+		line(drawing, contours[0][startInds[i]], contours[0][defectInds[i]], Scalar(0,255,255), 1);
 
 		// Draw start point (Green)
-		circle(drawing, contours[0][startIdx], 10, Scalar(0,255,0));
+		circle(drawing, contours[0][startInds[i]], 10, Scalar(0,255,0));
 
 		// Draw end point (Blue)
-		circle(drawing, contours[0][endIdx], 10, Scalar(255,0,0));
+		circle(drawing, contours[0][endInds[i]], 10, Scalar(255,255,255));
 
 		// Draw defect point (Red)
-		circle(drawing, contours[0][defectPtIdx], 5, Scalar(0,0,255));
+		circle(drawing, contours[0][defectInds[i]], 5, Scalar(0,0,255));
 	}
+
 	// Show and save!
 	std::cout<<"h5";
 	imshow("Defects", drawing);
@@ -209,6 +184,7 @@ bool detectHand(Mat src)
 	Mat fore;	// foreground segment
 	Mat frame(src.size(), CV_8UC3);
 	src.copyTo(frame);
+
 	// Contour points
 	std::vector<std::vector<cv::Point> > foregroundContours;
 
@@ -233,7 +209,6 @@ bool detectHand(Mat src)
 	int biggestForeground = findBiggestContour(foregroundContours);
 
 	std::cout << "6" << std::endl;
-	std::cout << "AHA! "<< biggestForeground<< std::endl;
 	if(biggestForeground == -1) return false;
 	Rect foregroundBound = boundingRect(foregroundContours[biggestForeground]);
 
@@ -258,6 +233,7 @@ bool detectHand(Mat src)
 
 	// Vector of points for contours
 	vector<vector<Point> > contours;
+
 	// Hierarchy for contour detection
 	vector<Vec4i> hierarchy;
 
@@ -275,10 +251,10 @@ bool detectHand(Mat src)
 
 	std::cout << "12" << std::endl;
 	//Show the contour
-	//imshow("drw", drawing);
+	imshow("drw", drawing);
 
 	// Detect hull and draw it
-	hull(drawing);
+	findHull(drawing);
 
 	std::cout << "13" << std::endl;
 	return true;
@@ -289,12 +265,6 @@ void CameraLoop()
 
 	// 2.0 Api
 	VideoCapture camera;
-
-	vector<CascadeClassifier> classifiers;
-	if(!loadClassifiers(classifiers))
-	{
-		return;
-	}
 
 	// Open the camera
 	camera.open(0);
@@ -326,10 +296,9 @@ void CameraLoop()
 
 		cameraFrame.copyTo(displayedFrame);
 		if(!detectHand(displayedFrame)) continue;
-		//DetectClassifers(displayedFrame, classifiers);
 
 		// Display the interesting thing
-		//imshow("Cam", displayedFrame);
+		imshow("Cam", displayedFrame);
 
 		char keypress = waitKey(33);
 		if(keypress == 27)
@@ -339,7 +308,23 @@ void CameraLoop()
 	}
 }
 
+int SingleImageTest(std::string filename)
+{
+	// Open image
+	Mat src = imread(filename);
+	if (src.empty())
+	{
+		std::cerr<<"Can't open file";
+		return -1;
+	}
+
+	detectHand(src);
+	waitKey(0);
+}
+
 int main()
 {
-	CameraLoop();
+	//CameraLoop();
+	SingleImageTest("hand_pic.jpg");
+
 }
