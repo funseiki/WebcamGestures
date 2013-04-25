@@ -22,7 +22,9 @@ RNG rng(12345);
 // Create an object of the background subtractor
 BackgroundSubtractorMOG2 background;
 
-void getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<int> & startInds, vector<int> & endInds, vector<int> & defectInds)
+void getDefects(vector<cv::Vec4i> convexityDefectsSet,
+				vector<Point> & startInds, vector<Point> & endInds,
+				vector<Point> & defectInds, vector<Point> & contour)
 {
 	vector<double>depths;
 	for (int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
@@ -50,12 +52,17 @@ void getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<int> & startInds, 
 		double depth = (double)convexityDefectsSet[defectIterator].val[3]/256.0f;  // see documentation link below why this
 		if(depth >= threshold)
 		{
-			startInds.push_back(startIdx);
-			endInds.push_back(endIdx);
-			defectInds.push_back(defectPtIdx);
+			startInds.push_back(contour[startIdx]);
+			endInds.push_back(contour[endIdx]);
+			defectInds.push_back(contour[defectPtIdx]);
 		}
 		std::cout << depth << std::endl;
 	}
+}
+
+void findCentroid(vector<Point> & points,Point2f & center,float & radius)
+{
+	minEnclosingCircle(points,center, radius);
 }
 
  // Find and display Convex Hull and defects
@@ -90,6 +97,7 @@ void findHull(Mat src )
 		drawContours( drawing, contours, i, Scalar(255), 1, 8, vector<Vec4i>(), 0, Point() );
 		drawContours( drawing, hull, i, Scalar(255), 1, 8, vector<Vec4i>(), 0, Point() );
 	}
+
 	std::cout<<"h3";
 	// Show in a window
 	imshow( "Hull", drawing );
@@ -123,29 +131,34 @@ void findHull(Mat src )
 		convexityDefects(contours[i], hulls[i], convexityDefectsSet);
 	std::cout<<"h4";
 
-	vector<int> startInds;
-	vector<int> endInds;
-	vector<int> defectInds;
+	vector<Point> startPoints;
+	vector<Point> endPoints;
+	vector<Point> defectPoints;
 
 	// Each index is a point in the contour.
 	// Since I know there is only 1 contour... 1st index is 0.
-	getDefects(convexityDefectsSet, startInds, endInds, defectInds);
+	getDefects(convexityDefectsSet, startPoints, endPoints, defectPoints, contours[0]);
+	Point2f center;
+	float radius;
+	findCentroid(defectPoints, center, radius);
 
-	for(int i = 0; i<startInds.size(); i++)
+	for(int i = 0; i<startPoints.size(); i++)
 	{
 		// Draw a yellow line from start to defect
-		line(drawing, contours[0][startInds[i]], contours[0][defectInds[i]], Scalar(0,255,255), 1);
+		line(drawing, startPoints[i], defectPoints[i], Scalar(0,255,255), 1);
 
 		// Draw start point (Green)
-		circle(drawing, contours[0][startInds[i]], 10, Scalar(0,255,0));
+		circle(drawing, startPoints[i], 10, Scalar(0,255,0));
 
-		// Draw end point (Blue)
-		circle(drawing, contours[0][endInds[i]], 10, Scalar(255,255,255));
+		// Draw end point (White)
+		circle(drawing, endPoints[i], 10, Scalar(255,255,255));
 
 		// Draw defect point (Red)
-		circle(drawing, contours[0][defectInds[i]], 5, Scalar(0,0,255));
+		circle(drawing, defectPoints[i], 5, Scalar(0,0,255));
 	}
 
+	circle(drawing, center, radius, Scalar(255,0,255));
+	circle(drawing, center, 10, Scalar(255, 255, 0));
 	// Show and save!
 	std::cout<<"h5";
 	imshow("Defects", drawing);
@@ -325,6 +338,5 @@ int SingleImageTest(std::string filename)
 int main()
 {
 	//CameraLoop();
-	SingleImageTest("hand_pic.jpg");
-
+	SingleImageTest("fist.jpg");
 }
