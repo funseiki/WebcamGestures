@@ -26,12 +26,10 @@ void getDefects(vector<cv::Vec4i> convexityDefectsSet,
 				vector<Point> & startInds, vector<Point> & endInds,
 				vector<Point> & defectInds, vector<Point> & contour)
 {
+	// First figure out what all the depths are
 	vector<double>depths;
 	for (int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
 	{
-		int startIdx = convexityDefectsSet[defectIterator].val[0];
-		int endIdx = convexityDefectsSet[defectIterator].val[1];
-		int defectPtIdx = convexityDefectsSet[defectIterator].val[2];
 		double depth = (double)convexityDefectsSet[defectIterator].val[3]/256.0f;  // see documentation link below why this
 		depths.push_back(depth);
 	}
@@ -39,6 +37,7 @@ void getDefects(vector<cv::Vec4i> convexityDefectsSet,
 	Scalar average_depth = mean(depths);
 	double threshold = average_depth[0]/10;
 
+	vector<double>dists;
 	// defectIterator (Java style, to keep Ashwin happy! ;p
 	// For each defect found
 	for (int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
@@ -50,11 +49,18 @@ void getDefects(vector<cv::Vec4i> convexityDefectsSet,
 		int endIdx = convexityDefectsSet[defectIterator].val[1];
 		int defectPtIdx = convexityDefectsSet[defectIterator].val[2];
 		double depth = (double)convexityDefectsSet[defectIterator].val[3]/256.0f;  // see documentation link below why this
+
+		// TODO: Use the previous start point and end points
 		if(depth >= threshold)
 		{
 			startInds.push_back(contour[startIdx]);
 			endInds.push_back(contour[endIdx]);
 			defectInds.push_back(contour[defectPtIdx]);
+			double distx = (contour[startIdx].x - contour[endIdx].x)*(contour[startIdx].x - contour[endIdx].x);
+			double disty = (contour[startIdx].y - contour[endIdx].y)*(contour[startIdx].y - contour[endIdx].y);
+			double dist = sqrt(distx+disty);
+			dists.push_back(dist);
+			std::cout << "Distance: " << dist << std::endl;
 		}
 		std::cout << depth << std::endl;
 	}
@@ -62,7 +68,16 @@ void getDefects(vector<cv::Vec4i> convexityDefectsSet,
 
 void findCentroid(vector<Point> & points,Point2f & center,float & radius)
 {
-	minEnclosingCircle(points,center, radius);
+	if(points.size() > 0)
+	{
+		minEnclosingCircle(points,center, radius);
+	}
+	else
+	{
+		center.x = -1;
+		center.y = -1;
+		radius = -1;
+	}
 }
 
  // Find and display Convex Hull and defects
@@ -124,6 +139,7 @@ void findHull(Mat src )
 	for(int i= 0; i<contours.size(); i++)
 		convexHull( Mat(contours[i]), hulls[i], false , false);
 	std::cout<<"h3.2";
+	std::cout << "Hulls Size " << hulls.size() << "Contours: " << contours.size() << std::endl; 
 	// Now, the set of defects we get will be the index of a point in the contour.
 	// It save space and just works!
 	// In the "C" version, defects are returned as a vector of CvPoints
@@ -135,9 +151,15 @@ void findHull(Mat src )
 	vector<Point> endPoints;
 	vector<Point> defectPoints;
 
+	if(contours.size() <= 0)
+	{
+		return;
+	}
+
 	// Each index is a point in the contour.
 	// Since I know there is only 1 contour... 1st index is 0.
 	getDefects(convexityDefectsSet, startPoints, endPoints, defectPoints, contours[0]);
+	std::cout << "v1";
 	Point2f center;
 	float radius;
 	findCentroid(defectPoints, center, radius);
@@ -157,8 +179,11 @@ void findHull(Mat src )
 		circle(drawing, defectPoints[i], 5, Scalar(0,0,255));
 	}
 
-	circle(drawing, center, radius, Scalar(255,0,255));
-	circle(drawing, center, 10, Scalar(255, 255, 0));
+	if(center.x > 0 && center.y > 0 && radius > 0)
+	{
+		circle(drawing, center, radius, Scalar(255,0,255));
+		circle(drawing, center, 10, Scalar(255, 255, 0));
+	}
 	// Show and save!
 	std::cout<<"h5";
 	imshow("Defects", drawing);
@@ -237,12 +262,12 @@ bool detectHand(Mat src)
 	std::cout << "9" << std::endl;
 	// Convert to HSV
 	Mat hsv;
-	cvtColor(ROI, hsv, CV_BGR2HSV);
+	cvtColor(ROI, hsv, CV_BGR2GRAY);
 
 	// Threshold for skin.
 	// LOT of trial-and-error here
 	Mat bw;
-	inRange(hsv, Scalar(0, 10, 170), Scalar(50, 255, 255), bw);
+	inRange(hsv, Scalar(50), Scalar(255), bw);
 
 	// Vector of points for contours
 	vector<vector<Point> > contours;
@@ -280,7 +305,8 @@ void CameraLoop()
 	VideoCapture camera;
 
 	// Open the camera
-	camera.open(0);
+	//camera.open(0);
+	camera.open("VideoDump.avi");
 	if(!camera.isOpened())
 	{
 		std::cerr << "ERROR: NO CAMERA AVAILABLE!?" << std::endl;
@@ -318,6 +344,10 @@ void CameraLoop()
 		{
 			break;
 		}
+		else if(keypress == int('p'))
+		{
+			waitKey(0);
+		}
 	}
 }
 
@@ -337,6 +367,6 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	//CameraLoop();
-	SingleImageTest("fist.jpg");
+	CameraLoop();
+	//SingleImageTest("image.jpg");
 }
