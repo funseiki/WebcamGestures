@@ -22,8 +22,6 @@ RNG rng(12345);
 // Create an object of the background subtractor
 BackgroundSubtractorMOG2 background;
 
-
-
 void getDefects(vector<cv::Vec4i> convexityDefectsSet,
 				vector<Point> & startInds, vector<Point> & endInds,
 				vector<Point> & defectInds, vector<Point> & contour)
@@ -37,7 +35,8 @@ void getDefects(vector<cv::Vec4i> convexityDefectsSet,
 	}
 
 	Scalar average_depth = mean(depths);
-	double threshold = average_depth[0]/10;
+
+	double threshold = average_depth.val[0]/10;
 
 	vector<double>dists;
 	// defectIterator (Java style, to keep Ashwin happy! ;p
@@ -64,6 +63,7 @@ void getDefects(vector<cv::Vec4i> convexityDefectsSet,
 			dists.push_back(dist);
 		}
 	}
+	std::cout << "Dists: " << mean(dists) << std::endl;
 }
 
 void findCentroid(vector<Point> & points,Point2f & center,float & radius)
