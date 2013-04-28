@@ -22,6 +22,8 @@ RNG rng(12345);
 // Create an object of the background subtractor
 BackgroundSubtractorMOG2 background;
 
+
+
 void getDefects(vector<cv::Vec4i> convexityDefectsSet,
 				vector<Point> & startInds, vector<Point> & endInds,
 				vector<Point> & defectInds, vector<Point> & contour)
@@ -60,9 +62,7 @@ void getDefects(vector<cv::Vec4i> convexityDefectsSet,
 			double disty = (contour[startIdx].y - contour[endIdx].y)*(contour[startIdx].y - contour[endIdx].y);
 			double dist = sqrt(distx+disty);
 			dists.push_back(dist);
-			std::cout << "Distance: " << dist << std::endl;
 		}
-		std::cout << depth << std::endl;
 	}
 }
 
@@ -82,7 +82,7 @@ void findCentroid(vector<Point> & points,Point2f & center,float & radius)
 
  // Find and display Convex Hull and defects
  // Input is contour of image
-void findHull(Mat src )
+Mat * findHull(Mat src )
 {
 	// Contours and it's heirarchy (look at OpenCV ref)
 	vector<vector<Point> > contours;
@@ -103,19 +103,19 @@ void findHull(Mat src )
 	}
 	std::cout<<"h2";
 	// Draw contours + hull results
-	Mat drawing = Mat::zeros( src.size(), CV_8UC3 );
+	Mat * drawing = new Mat( src.size(), CV_8UC3 );
 
 	// Draw the contours and their respective hulls
 	for( int i = 0; i< contours.size(); i++ )
 	{
 		Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-		drawContours( drawing, contours, i, Scalar(255), 1, 8, vector<Vec4i>(), 0, Point() );
-		drawContours( drawing, hull, i, Scalar(255), 1, 8, vector<Vec4i>(), 0, Point() );
+		drawContours( *drawing, contours, i, Scalar(255), 1, 8, vector<Vec4i>(), 0, Point() );
+		drawContours( *drawing, hull, i, Scalar(255), 1, 8, vector<Vec4i>(), 0, Point() );
 	}
 
 	std::cout<<"h3";
 	// Show in a window
-	imshow( "Hull", drawing );
+	imshow( "Hull", *drawing );
 
 	// To find the "defects in the hull"
 
@@ -144,7 +144,16 @@ void findHull(Mat src )
 	// It save space and just works!
 	// In the "C" version, defects are returned as a vector of CvPoints
 	for(int i= 0; i<contours.size(); i++)
-		convexityDefects(contours[i], hulls[i], convexityDefectsSet);
+	{
+		try
+		{
+			convexityDefects(contours[i], hulls[i], convexityDefectsSet);
+		}
+		catch(Exception e)
+		{
+			return NULL;
+		}
+	}
 	std::cout<<"h4";
 
 	vector<Point> startPoints;
@@ -153,7 +162,7 @@ void findHull(Mat src )
 
 	if(contours.size() <= 0)
 	{
-		return;
+		return NULL;
 	}
 
 	// Each index is a point in the contour.
@@ -167,26 +176,27 @@ void findHull(Mat src )
 	for(int i = 0; i<startPoints.size(); i++)
 	{
 		// Draw a yellow line from start to defect
-		line(drawing, startPoints[i], defectPoints[i], Scalar(0,255,255), 1);
+		line(*drawing, startPoints[i], defectPoints[i], Scalar(0,255,255), 1);
 
 		// Draw start point (Green)
-		circle(drawing, startPoints[i], 10, Scalar(0,255,0));
+		circle(*drawing, startPoints[i], 10, Scalar(0,255,0));
 
 		// Draw end point (White)
-		circle(drawing, endPoints[i], 10, Scalar(255,255,255));
+		circle(*drawing, endPoints[i], 10, Scalar(255,255,255));
 
 		// Draw defect point (Red)
-		circle(drawing, defectPoints[i], 5, Scalar(0,0,255));
+		circle(*drawing, defectPoints[i], 5, Scalar(0,0,255));
 	}
 
 	if(center.x > 0 && center.y > 0 && radius > 0)
 	{
-		circle(drawing, center, radius, Scalar(255,0,255));
-		circle(drawing, center, 10, Scalar(255, 255, 0));
+		circle(*drawing, center, radius, Scalar(255,0,255));
+		circle(*drawing, center, 10, Scalar(255, 255, 0));
 	}
 	// Show and save!
 	std::cout<<"h5";
-	imshow("Defects", drawing);
+	imshow("Defects", *drawing);
+	return drawing;
 }
 
 // Returns index of largest vector
@@ -215,7 +225,7 @@ int findBiggestContour( vector < vector<Point> > contours)
 	return indexOfBiggestContour;
 }
 
-bool detectHand(Mat src)
+Mat * detectHand(Mat src)
 {
 	std::cout << "1" << std::endl;
 	Mat back;	// background frame
@@ -247,12 +257,12 @@ bool detectHand(Mat src)
 	int biggestForeground = findBiggestContour(foregroundContours);
 
 	std::cout << "6" << std::endl;
-	if(biggestForeground == -1) return false;
+	if(biggestForeground == -1) return NULL;
 	Rect foregroundBound = boundingRect(foregroundContours[biggestForeground]);
 
 	std::cout << "7" << std::endl;
 	// Get the region of interest
-	Mat ROI = src(foregroundBound);
+	Mat ROI = src;//(foregroundBound);
 
 	std::cout << "8" << std::endl;
 	// Blur image (Helps the skin detection)
@@ -292,10 +302,7 @@ bool detectHand(Mat src)
 	imshow("drw", drawing);
 
 	// Detect hull and draw it
-	findHull(drawing);
-
-	std::cout << "13" << std::endl;
-	return true;
+	return findHull(drawing);
 }
 
 void CameraLoop()
@@ -306,7 +313,7 @@ void CameraLoop()
 
 	// Open the camera
 	//camera.open(0);
-	camera.open("VideoDump.avi");
+	camera.open("VideoDumpFore.avi");
 	if(!camera.isOpened())
 	{
 		std::cerr << "ERROR: NO CAMERA AVAILABLE!?" << std::endl;
@@ -331,14 +338,13 @@ void CameraLoop()
 		}
 
 		// Output image to be drawn onto
-		Mat displayedFrame(cameraFrame.size(), CV_8UC3);
-
-		cameraFrame.copyTo(displayedFrame);
-		if(!detectHand(displayedFrame)) continue;
+		//Mat displayedFrame(cameraFrame.size(), CV_8UC3);
+		Mat * out = detectHand(cameraFrame);
+		//cameraFrame.copyTo(displayedFrame);
+		if(out == NULL) continue;
 
 		// Display the interesting thing
-		imshow("Cam", displayedFrame);
-
+		imshow("Cam", cameraFrame);
 		char keypress = waitKey(33);
 		if(keypress == 27)
 		{
@@ -367,6 +373,6 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	CameraLoop();
-	//SingleImageTest("image.jpg");
+	//CameraLoop();
+	SingleImageTest("image.jpg");
 }
