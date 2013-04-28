@@ -183,6 +183,8 @@ Mat * findHull(Mat src )
 	return drawing;
 }
 
+
+
 // Returns index of largest vector
 int findBiggestContour( vector < vector<Point> > contours)
 {
@@ -297,7 +299,7 @@ void CameraLoop()
 
 	// Open the camera
 	//camera.open(0);
-	camera.open("VideoDumpFore.avi");
+	camera.open("VideoDumpForeAsh1.avi");
 	if(!camera.isOpened())
 	{
 		std::cerr << "ERROR: NO CAMERA AVAILABLE!?" << std::endl;
