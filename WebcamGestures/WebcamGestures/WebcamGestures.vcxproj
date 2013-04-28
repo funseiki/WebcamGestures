@@ -83,6 +83,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HandShape.h" />
+    <ClInclude Include="HandPair.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

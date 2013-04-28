@@ -26,5 +26,8 @@
     <ClInclude Include="HandShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HandPair.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
