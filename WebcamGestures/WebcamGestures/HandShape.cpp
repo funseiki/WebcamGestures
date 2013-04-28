@@ -1,14 +1,112 @@
 #include "HandShape.h"
-
+using namespace std;
 
 HandShape::HandShape(void)
 {
-	_fingerCount = -1;
-	_angle = -1;
-	_centroid = Point(0,0);
+	fingerCount = -1;
+	angle = -1;
+	centroid = Point(0,0);
+	fingerThreshold = 15;
 }
 
+HandShape::HandShape(vector<Point> _startPoints, vector<Point> _endPoints, vector<Point> _defectPoints)
+{
+	fingerThreshold = 15;
+	MakeHand(_startPoints, _endPoints, _defectPoints);
+}
 
 HandShape::~HandShape(void)
 {
+}
+
+// Helpers
+
+void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, vector<Point> _defectPoints)
+{
+	startPoints = _startPoints;
+	endPoints = _endPoints;
+	defectPoints = _defectPoints;
+	fingerCount = 0;
+
+	// Find the centroid of this hand
+	findCentroid(defectPoints, centroid, radius);
+
+	// Count the fingers
+	Point prevEnd = endPoints[endPoints.size()-1];
+	for (int i = 0; i < startPoints.size(); i++)
+	{
+		Point currStart = startPoints[i];
+		double curr = distance(currStart, prevEnd);
+
+		// The start and end points are close enough to be a finger
+		if(curr < fingerThreshold)
+		{
+			fingerCount++;
+		}
+		prevEnd = endPoints[i];
+	}
+}
+
+void HandShape::findCentroid(vector<Point> & points,Point2f & center,float & radius)
+{
+	if(points.size() > 0)
+	{
+		minEnclosingCircle(points,center, radius);
+	}
+	else
+	{
+		center.x = -1;
+		center.y = -1;
+		radius = -1;
+	}
+}
+
+double HandShape::distance(Point one, Point two)
+{
+	return sqrt(((one.x - two.x)*(one.x - two.x))+((one.y - two.y)*(one.y - two.y)));
+}
+
+// Displayers
+void HandShape::drawHand(Mat drawing)
+{
+	for(int i = 0; i<startPoints.size(); i++)
+	{
+		// Draw a yellow line from start to defect
+		line(drawing, startPoints[i], defectPoints[i], Scalar(0,255,255), 1);
+
+		// Draw start point (Green)
+		circle(drawing, startPoints[i], 10, Scalar(0,250,0));
+
+		// Draw end point (White)
+		circle(drawing, endPoints[i], 10, Scalar(250,250,250));
+
+		// Draw defect point (Red)
+		circle(drawing, defectPoints[i], 5, Scalar(0,0,255));
+	}
+
+	if(centroid.x > 0 && centroid.y > 0 && radius > 0)
+	{
+		circle(drawing, centroid, radius, Scalar(255,0,255));
+		circle(drawing, centroid, 10, Scalar(255, 255, 0));
+	}
+
+	imshow("Defects", drawing);
+}
+
+// Getters
+int HandShape::getfingerCount()
+{
+	return fingerCount;
+}
+int HandShape::getAngle()
+{
+	return angle;
+}
+float HandShape::getRadius()
+{
+	return radius;
+}
+Point2f HandShape::getCentroid()
+{
+	return centroid;
 }

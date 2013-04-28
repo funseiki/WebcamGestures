@@ -9,9 +9,10 @@
 #include <cv.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include<opencv2/opencv.hpp>
-
+#include <opencv2/opencv.hpp>
 #include <iostream>
+
+#include "HandShape.h";
 
 /** Namespaces **/
 using namespace cv;
@@ -168,34 +169,14 @@ Mat * findHull(Mat src )
 	// Each index is a point in the contour.
 	// Since I know there is only 1 contour... 1st index is 0.
 	getDefects(convexityDefectsSet, startPoints, endPoints, defectPoints, contours[0]);
-	std::cout << "v1";
-	Point2f center;
-	float radius;
-	findCentroid(defectPoints, center, radius);
 
-	for(int i = 0; i<startPoints.size(); i++)
-	{
-		// Draw a yellow line from start to defect
-		line(*drawing, startPoints[i], defectPoints[i], Scalar(0,255,255), 1);
+	HandShape hand(startPoints, endPoints, defectPoints);
+	hand.drawHand(*drawing);
 
-		// Draw start point (Green)
-		circle(*drawing, startPoints[i], 10, Scalar(0,255,0));
-
-		// Draw end point (White)
-		circle(*drawing, endPoints[i], 10, Scalar(255,255,255));
-
-		// Draw defect point (Red)
-		circle(*drawing, defectPoints[i], 5, Scalar(0,0,255));
-	}
-
-	if(center.x > 0 && center.y > 0 && radius > 0)
-	{
-		circle(*drawing, center, radius, Scalar(255,0,255));
-		circle(*drawing, center, 10, Scalar(255, 255, 0));
-	}
 	// Show and save!
-	std::cout<<"h5";
-	imshow("Defects", *drawing);
+	std::cout<<"h5" << std::endl;
+
+	std::cout << "Number of fingers: " << hand.getfingerCount() << std::endl;
 	return drawing;
 }
 
@@ -267,7 +248,7 @@ Mat * detectHand(Mat src)
 	std::cout << "8" << std::endl;
 	// Blur image (Helps the skin detection)
 	// Blur window size 5x5
-	blur( ROI, ROI, Size(5,5) );
+	//blur( ROI, ROI, Size(5,5) );
 
 	std::cout << "9" << std::endl;
 	// Convert to HSV
