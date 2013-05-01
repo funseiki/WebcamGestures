@@ -81,11 +81,13 @@
     <ClCompile Include="HandShape.cpp" />
     <ClCompile Include="HullMaker.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HandShape.h" />
     <ClInclude Include="HandPair.h" />
     <ClInclude Include="HullMaker.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

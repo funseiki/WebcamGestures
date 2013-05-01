@@ -13,6 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include "HandShape.h";
+#include "Utils.h";
 
 /** Namespaces **/
 using namespace cv;
@@ -33,6 +34,7 @@ Point2f averageStartCentroid;
 Point2f averageEndCentroid;
 // Create an object of the background subtractor
 BackgroundSubtractorMOG2 background;
+
 
 void getGesture(){
 	    //Point2f startCentroid  = startPoint.getCentroid();
