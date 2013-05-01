@@ -20,8 +20,75 @@ using namespace cv;
 /** Globals **/
 RNG rng(12345);
 
+int BUFFER_SIZE = 6;
+int MAX_FRAME_SIZE = 60;
+
+//std::queue<HandShape> hands;
+std::vector<HandShape> hands;
+int state = 0;//state = 0 implies SEARCHING and state = 1 implies RECOGNITION
+HandShape startPoint;//stores the start point of our gesture search
+HandShape endPoint;//stores the end point of our gesture search
+int frameCount = 0;//stores number of frames we've seen during 'RECOGNTION' phase
+
 // Create an object of the background subtractor
 BackgroundSubtractorMOG2 background;
+
+void getGesture(){
+	    Point2f startCentroid  = startPoint.getCentroid();
+	    Point2f endCentroid  = endPoint.getCentroid();
+		float angle = atan2(startCentroid.y - endCentroid.y, startCentroid.x - endCentroid.x);
+		std::cout<<(angle*180/3.14);
+}
+bool isCurrentHandAMajority(HandShape handPair) {
+	int frequencyOfShape = 0; 
+	int indexFirstOccurence = -1;
+	for(int handsIterator = 0; handsIterator < hands.size(); handsIterator) {
+			HandShape hp = hands[handsIterator];
+			if(hp.getfingerCount() == handPair.getfingerCount()){
+				frequencyOfShape++;
+				//store the first occurence of the hand match for assigning startPoint
+				if(frequencyOfShape == 1)
+					indexFirstOccurence = handsIterator;
+				//When we find a majority in previous few frames,we assign start 
+				if(frequencyOfShape > (BUFFER_SIZE/2)){
+					//if you are in the SEARCH phase,store the start point
+					if(state == 0) 
+						startPoint = hands[indexFirstOccurence];
+					return true;
+				}
+			}
+		}
+	if(state == 1)
+		endPoint = hands[indexFirstOccurence];
+
+	return false;
+	
+}
+
+void detectGesture(HandShape currentHandPair){
+	//Searching for a start point to start gesture recognition
+	if(state == 0) {
+		bool foundStart = isCurrentHandAMajority(currentHandPair);
+		if(foundStart) {
+			state = 1;			
+		} 
+	    
+	} else { //RECOGNITION PHASE
+		frameCount++;
+		
+		bool foundEnd =  !isCurrentHandAMajority(startPoint);
+		if(foundEnd || frameCount == MAX_FRAME_SIZE){
+			getGesture();
+			frameCount = 0;
+
+		}
+		
+	}
+	hands.push_back(currentHandPair);
+	if(hands.size() > BUFFER_SIZE) hands.erase(hands.begin());
+	
+}
+
 
 void getDefects(vector<cv::Vec4i> convexityDefectsSet,
 				vector<Point> & startInds, vector<Point> & endInds,
@@ -359,6 +426,7 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	CameraLoop();
+	 CameraLoop();
+	//getchar();
 	//SingleImageTest("image.jpg");
 }
