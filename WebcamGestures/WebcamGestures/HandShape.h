@@ -19,7 +19,7 @@ public:
 
 	// Getters
 	int getfingerCount();
-	int getAngle();
+	double getAngle();
 	float getRadius();
 	Point2f getCentroid();
 
@@ -29,11 +29,11 @@ public:
 private:
 	// Members
 	int fingerCount;
-	Point longestFinger;
+	Point2f middleFinger;	// heheh
 	vector<Point> fingerPoints;
 	bool isHand;
 
-	float angle;
+	double angle;
 	Point2f centroid;
 	float radius;
 	double fingerThreshold;
@@ -46,6 +46,7 @@ private:
 
 	// Methods
 	void findCentroid(vector<Point> & points,Point2f & center,float & radius);
-	double distance(Point one, Point two);
-	void determineLongestFinger();
+	double distance(Point2f one, Point2f two);
+	void determineMiddleFinger();
+	double angleBetween(Point2f origin, Point2f onCircle);
 };

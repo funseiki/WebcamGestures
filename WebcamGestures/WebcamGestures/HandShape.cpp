@@ -8,6 +8,7 @@ HandShape::HandShape(void)
 	fingerCount = -1;
 	angle = -1;
 	centroid = Point(0,0);
+	middleFinger = Point2f(-1,-1);
 	fingerThreshold = 15;
 }
 
@@ -27,6 +28,13 @@ bool HandShape::isValidHand()
 	return isHand;
 }
 
+void HandShape::determineMiddleFinger()
+{
+	float rad;
+
+	// The 'middle finger' is the centroid of all of the other fingers
+	findCentroid(fingerPoints, middleFinger, rad);
+}
 
 // Helpers
 void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, vector<Point> _defectPoints)
@@ -60,6 +68,22 @@ void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, v
 		}
 		prevEnd = endPoints[i];
 	}
+
+	// Figure out the orientation of the hand
+	determineMiddleFinger();
+	angle = angleBetween(centroid, middleFinger);
+
+}
+
+// Utility functions
+double HandShape::angleBetween(Point2f origin, Point2f onCircle)
+{
+	return (double)atan((double)((onCircle.y - origin.y)/ (onCircle.x - origin.x)));
+}
+
+double HandShape::distance(Point2f one, Point2f two)
+{
+	return sqrt(((one.x - two.x)*(one.x - two.x))+((one.y - two.y)*(one.y - two.y)));
 }
 
 void HandShape::findCentroid(vector<Point> & points,Point2f & center,float & radius)
@@ -74,21 +98,6 @@ void HandShape::findCentroid(vector<Point> & points,Point2f & center,float & rad
 		center.y = -1;
 		radius = -1;
 	}
-}
-
-void HandShape::determineLongestFinger()
-{
-	double currDist = numeric_limits<double>::max();
-	for(int i = 0; i < fingerPoints.size(); i++)
-	{
-		double newDist = distance(fingerPoints[i], centroid);
-
-	}
-}
-
-double HandShape::distance(Point one, Point two)
-{
-	return sqrt(((one.x - two.x)*(one.x - two.x))+((one.y - two.y)*(one.y - two.y)));
 }
 
 // Displayers
@@ -123,7 +132,7 @@ int HandShape::getfingerCount()
 {
 	return fingerCount;
 }
-int HandShape::getAngle()
+double HandShape::getAngle()
 {
 	return angle;
 }

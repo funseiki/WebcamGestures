@@ -40,7 +40,7 @@ void getGesture(){
 		std::cout<<(angle*180/3.14);
 }
 bool isCurrentHandAMajority(HandShape handPair) {
-	int frequencyOfShape = 0; 
+	int frequencyOfShape = 0;
 	int indexFirstOccurence = -1;
 	for(int handsIterator = 0; handsIterator < hands.size(); handsIterator) {
 			HandShape hp = hands[handsIterator];
@@ -49,10 +49,10 @@ bool isCurrentHandAMajority(HandShape handPair) {
 				//store the first occurence of the hand match for assigning startPoint
 				if(frequencyOfShape == 1)
 					indexFirstOccurence = handsIterator;
-				//When we find a majority in previous few frames,we assign start 
+				//When we find a majority in previous few frames,we assign start
 				if(frequencyOfShape > (BUFFER_SIZE/2)){
 					//if you are in the SEARCH phase,store the start point
-					if(state == 0) 
+					if(state == 0)
 						startPoint = hands[indexFirstOccurence];
 					return true;
 				}
@@ -62,7 +62,7 @@ bool isCurrentHandAMajority(HandShape handPair) {
 		endPoint = hands[indexFirstOccurence];
 
 	return false;
-	
+
 }
 
 void detectGesture(HandShape currentHandPair){
@@ -70,23 +70,23 @@ void detectGesture(HandShape currentHandPair){
 	if(state == 0) {
 		bool foundStart = isCurrentHandAMajority(currentHandPair);
 		if(foundStart) {
-			state = 1;			
-		} 
-	    
+			state = 1;
+		}
+
 	} else { //RECOGNITION PHASE
 		frameCount++;
-		
+
 		bool foundEnd =  !isCurrentHandAMajority(startPoint);
 		if(foundEnd || frameCount == MAX_FRAME_SIZE){
 			getGesture();
 			frameCount = 0;
 
 		}
-		
+
 	}
 	hands.push_back(currentHandPair);
 	if(hands.size() > BUFFER_SIZE) hands.erase(hands.begin());
-	
+
 }
 
 
@@ -207,7 +207,7 @@ Mat * findHull(Mat src )
 	for(int i= 0; i<contours.size(); i++)
 		convexHull( Mat(contours[i]), hulls[i], false , false);
 	std::cout<<"h3.2";
-	std::cout << "Hulls Size " << hulls.size() << "Contours: " << contours.size() << std::endl; 
+	std::cout << "Hulls Size " << hulls.size() << "Contours: " << contours.size() << std::endl;
 	// Now, the set of defects we get will be the index of a point in the contour.
 	// It save space and just works!
 	// In the "C" version, defects are returned as a vector of CvPoints
@@ -246,7 +246,8 @@ Mat * findHull(Mat src )
 	// Show and save!
 	std::cout<<"h5" << std::endl;
 
-	std::cout << "Number of fingers: " << hand.getfingerCount() << std::endl;
+	std::cout << "Number of fingers: " << hand.getfingerCount() << std::endl
+		<< "Angle: " << hand.getAngle() << std::endl;
 	return drawing;
 }
 
@@ -426,7 +427,6 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	 CameraLoop();
-	//getchar();
-	//SingleImageTest("image.jpg");
+	//CameraLoop();
+	SingleImageTest("image.jpg");
 }
