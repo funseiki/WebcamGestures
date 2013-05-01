@@ -10,6 +10,7 @@
 /WebcamGestures/WebcamGestures/Release
 /WebcamGestures/WebcamGestures/*.avi
 /WebcamGestures/WebcamGestures/*.jpg
+/WebcamGestures/WebcamGestures/example.txt
 
 # /WebcamGestures/BackgroundSubtraction/
 /WebcamGestures/BackgroundSubtraction/Release/
