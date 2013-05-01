@@ -12,7 +12,9 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <fstream>
-#include "HandShape.h";
+
+#include "HandShape.h"
+#include "HullMaker.h"
 #include "Utils.h";
 
 /** Namespaces **/
@@ -37,10 +39,10 @@ BackgroundSubtractorMOG2 background;
 
 
 void getGesture(){
-	    //Point2f startCentroid  = startPoint.getCentroid();
+		//Point2f startCentroid  = startPoint.getCentroid();
 	   // Point2f endCentroid  = endPoint.getCentroid();
 	std::ofstream myfile;
-    myfile.open ("example.txt",std::ios::app);
+	myfile.open ("example.txt",std::ios::app);
 	float angle = atan2(averageStartCentroid.y - averageEndCentroid.y, averageStartCentroid.x - averageEndCentroid.x);
 		std::cout<<(angle*180/3.14);
 		myfile << "Gesture finger count : " << startPoint.getfingerCount();
@@ -92,7 +94,7 @@ void setAverageCentroid(){
 }
 void detectGesture(HandShape currentHandPair){
 	std::ofstream myfile;
-    myfile.open ("example.txt",std::ios::app);
+	myfile.open ("example.txt",std::ios::app);
 	//Searching for a start point to start gesture recognition
 	if(state == 0) {
 		std::cout << "Searching phase";
@@ -100,9 +102,9 @@ void detectGesture(HandShape currentHandPair){
 		bool foundStart = isCurrentHandAMajority(currentHandPair);
 		if(foundStart) {
 			setAverageCentroid();
-			state = 1;			
-		} 
-	    
+			state = 1;
+		}
+
 	} else { //RECOGNITION PHASE
 		frameCount++;
 		std::cout << "Recognition phase";
@@ -263,13 +265,13 @@ Mat * findHull(Mat src )
 	// Show and save!
 	std::cout<<"h5" << std::endl;
 	std::ofstream myfile;
-    myfile.open ("example.txt",std::ios::app);
-	myfile << "Frame no :" << ++frameNumber; 
+	myfile.open ("example.txt",std::ios::app);
+	myfile << "Frame no :" << ++frameNumber;
 	myfile << "Number of fingers: " << hand.getfingerCount() << std::endl;
 	myfile<<"Centroid- x: "<< hand.getCentroid().x << " y: "<< hand.getCentroid().y;
 	myfile.close();
 
-	std::cout<<"Frame no :" << frameNumber; 
+	std::cout<<"Frame no :" << frameNumber;
 	std::cout << "Number of fingers: " << hand.getfingerCount() << std::endl;
 	std::cout<<"Centroid- x: "<< hand.getCentroid().x << " y: "<< hand.getCentroid().y;
 	detectGesture(hand);
@@ -310,7 +312,7 @@ Mat * detectHand(Mat src)
 	Mat back;	// background frame
 	Mat fore;	// foreground segment
 	Mat frame(src.size(), CV_8UC3);
-	src.copyTo(fore);
+	//src.copyTo(fore);
 	cvtColor(src,fore,CV_BGR2GRAY);
 	// Contour points
 	std::vector<std::vector<cv::Point> > foregroundContours;
@@ -332,21 +334,17 @@ Mat * detectHand(Mat src)
 	//imshow("fg", fore);
 	std::cout << "5" << std::endl;
 	// Find and draw Contours
-	findContours(fore,foregroundContours, CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
-	int biggestForeground = findBiggestContour(foregroundContours);
+	//findContours(fore,foregroundContours, CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
+	//int biggestForeground = findBiggestContour(foregroundContours);
 
-	std::cout << "6" << std::endl;
-	if(biggestForeground == -1) return NULL;
-	Rect foregroundBound = boundingRect(foregroundContours[biggestForeground]);
+	//std::cout << "6" << std::endl;
+	//if(biggestForeground == -1) return NULL;
 
 	std::cout << "7" << std::endl;
 	// Get the region of interest
 	Mat ROI = src;//(foregroundBound);
 
 	std::cout << "8" << std::endl;
-	// Blur image (Helps the skin detection)
-	// Blur window size 5x5
-	//blur( ROI, ROI, Size(5,5) );
 
 	std::cout << "9" << std::endl;
 	// Convert to HSV
@@ -392,7 +390,7 @@ void CameraLoop()
 
 	// Open the camera
 	//camera.open(0);
-	camera.open("VideoDumpForeAsh2.avi");
+	camera.open("VideoDumpFore.avi");
 	if(!camera.isOpened())
 	{
 		std::cerr << "ERROR: NO CAMERA AVAILABLE!?" << std::endl;
@@ -402,7 +400,7 @@ void CameraLoop()
 	// Set camera parameters
 	//camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
 	//camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
-	
+
 	while(true)
 	{
 		Mat cameraFrame;
@@ -418,7 +416,7 @@ void CameraLoop()
 
 		// Output image to be drawn onto
 		Mat displayedFrame(cameraFrame.size(), CV_8UC3);
-		
+
 		Mat * out = detectHand(cameraFrame);
 		cameraFrame.copyTo(displayedFrame);
 		//if(out == NULL) continue;
@@ -449,13 +447,34 @@ int SingleImageTest(std::string filename)
 		return -1;
 	}
 
-	detectHand(src);
+	//detectHand(src);
+	HullMaker hull(src);
+	vector<Point> starts;
+	vector<Point> ends;
+	vector<Point> defects;
+
+	// Get the defect points
+	hull.getDefectPoints(starts, ends, defects);
+	if(hull.isValidHull())
+	{
+		// Display the hull
+		Mat contourImage = hull.getHullImage();
+		imshow("Contour", contourImage);
+
+		// Identify the hand
+		HandShape hand(starts, ends, defects);
+		if(hand.isValidHand())
+		{
+			hand.drawHand(contourImage);
+		}
+	}
+	imshow("Original", src);
 	waitKey(0);
 }
 
 int main()
 {
-	
+
 	 CameraLoop();
 	//getchar();
 	//SingleImageTest("image.jpg");
