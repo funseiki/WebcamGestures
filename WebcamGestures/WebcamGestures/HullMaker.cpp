@@ -83,6 +83,10 @@ bool HullMaker::findHull(vector<vector<Point>> contours, Mat input)
 
 	// Set the defect points, we're assuming that we only have the one contour
 	getDefects(defectsSet, contours[0], startPoints, endPoints, defectPoints);
+	if(startPoints.size() <= 0)
+	{
+		return false;
+	}
 	return true;
 }
 
