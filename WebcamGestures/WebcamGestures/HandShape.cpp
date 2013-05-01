@@ -15,7 +15,6 @@ HandShape::HandShape(vector<Point> _startPoints, vector<Point> _endPoints, vecto
 	setDefaults();
 	fingerThreshold = 15;
 	MakeHand(_startPoints, _endPoints, _defectPoints);
-
 }
 
 HandShape::HandShape(int fingerCount,Point2f centroid){
@@ -38,6 +37,7 @@ HandShape::HandShape(Mat image)
 
 	if(hull.isValidHull())
 	{
+		contourImage = hull.getHullImage();
 		MakeHand(_startPoints, _endPoints, _defectPoints);
 	}
 	else
@@ -78,7 +78,7 @@ void HandShape::getClosestPoints(Point2f center, vector<Point> points, vector<Po
 	priority_queue<QueuePoint> pq;
 
 	// Order by closest to the center
-	for(int i = 0; i < points.size(); i++)
+	for(unsigned int i = 0; i < points.size(); i++)
 	{
 		pq.push(QueuePoint(points[i], center));
 	}
@@ -129,7 +129,7 @@ void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, v
 
 	// Count the fingers
 	Point prevEnd = endPoints[endPoints.size()-1];
-	for (int i = 0; i < startPoints.size(); i++)
+	for (unsigned int i = 0; i < startPoints.size(); i++)
 	{
 		Point currStart = startPoints[i];
 		double curr = distance(currStart, prevEnd);
@@ -175,10 +175,16 @@ void HandShape::findCentroid(vector<Point> & points,Point2f & center,float & rad
 	}
 }
 
+
 // Displayers
-void HandShape::drawHand(Mat drawing)
+void HandShape::drawHand(Mat & drawing)
 {
-	for(int i = 0; i<startPoints.size(); i++)
+	if(contourImage.size().width > 0)
+	{
+		drawing = contourImage;
+	}
+
+	for(unsigned int i = 0; i<startPoints.size(); i++)
 	{
 		// Draw a yellow line from start to defect
 		line(drawing, startPoints[i], defectPoints[i], Scalar(0,255,255), 1);

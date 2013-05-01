@@ -28,7 +28,7 @@ public:
 	Point2f getMiddleFinger();
 
 	// Displayer
-	void drawHand(Mat drawing);
+	void drawHand(Mat & drawing);
 
 private:
 	// Members
@@ -42,6 +42,7 @@ private:
 	float radius;
 	double fingerThreshold;
 
+	Mat contourImage;
 
 	// Hull information
 	vector<Point> startPoints;
