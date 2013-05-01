@@ -134,20 +134,6 @@ void getDefects(vector<cv::Vec4i> convexityDefectsSet,
 	std::cout << "Dists: " << mean(dists) << std::endl;
 }
 
-void findCentroid(vector<Point> & points,Point2f & center,float & radius)
-{
-	if(points.size() > 0)
-	{
-		minEnclosingCircle(points,center, radius);
-	}
-	else
-	{
-		center.x = -1;
-		center.y = -1;
-		radius = -1;
-	}
-}
-
  // Find and display Convex Hull and defects
  // Input is contour of image
 Mat * findHull(Mat src )
@@ -285,24 +271,24 @@ Mat * detectHand(Mat src)
 	Mat back;	// background frame
 	Mat fore;	// foreground segment
 	Mat frame(src.size(), CV_8UC3);
-	src.copyTo(frame);
-
+	src.copyTo(fore);
+	cvtColor(src,fore,CV_BGR2GRAY);
 	// Contour points
 	std::vector<std::vector<cv::Point> > foregroundContours;
 
 	std::cout << "2" << std::endl;
 	// Feed subtractor new frame and get foreground
-	background.operator ()(frame,fore);
+	//background.operator ()(frame,fore);
 
 	std::cout << "3" << std::endl;
 	// Get the background. History is colleceted by background object
-	background.getBackgroundImage(back);
+	//background.getBackgroundImage(back);
 	//imshow("bg", back);
 
 	std::cout << "4" << std::endl;
 	// Erode and Dilate to remove noise (seems to work)
-	erode(fore,fore,cv::Mat());
-	dilate(fore,fore,cv::Mat());
+	//erode(fore,fore,cv::Mat());
+	//dilate(fore,fore,cv::Mat());
 
 	//imshow("fg", fore);
 	std::cout << "5" << std::endl;
@@ -428,5 +414,5 @@ int SingleImageTest(std::string filename)
 int main()
 {
 	//CameraLoop();
-	SingleImageTest("TestVector\\im4.png");
+	SingleImageTest("TestVector\\im8.png");
 }
