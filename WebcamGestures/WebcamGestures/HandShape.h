@@ -27,7 +27,8 @@ public:
 	Point2f getCentroid();
 	Point2f getMiddleFinger();
 
-	// Displayer
+	// Displayers
+	void drawContour(Mat & drawing);
 	void drawHand(Mat & drawing);
 
 private:

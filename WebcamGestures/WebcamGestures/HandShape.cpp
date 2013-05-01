@@ -175,9 +175,28 @@ void HandShape::findCentroid(vector<Point> & points,Point2f & center,float & rad
 	}
 }
 
+void HandShape::drawHand(Mat & drawing)
+{
+	if(contourImage.size().width > 0)
+	{
+		drawing = contourImage;
+	}
+
+	for(unsigned int i = 0; i < fingerPoints.size(); i++)
+	{
+		circle(drawing, fingerPoints[i], 10, Scalar(0,250,0));
+	}
+
+	if(centroid.x > 0 && centroid.y > 0 && radius > 0)
+	{
+		circle(drawing, centroid, radius, Scalar(255,0,255));
+		circle(drawing, centroid, 10, Scalar(255, 255, 0));
+	}
+}
+
 
 // Displayers
-void HandShape::drawHand(Mat & drawing)
+void HandShape::drawContour(Mat & drawing)
 {
 	if(contourImage.size().width > 0)
 	{
