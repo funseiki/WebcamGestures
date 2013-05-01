@@ -13,6 +13,7 @@ class HandShape
 public:
 	HandShape(void);
 	HandShape(vector<Point> startPoints, vector<Point> endPoints, vector<Point> defectPoints);
+	HandShape(int fingerCount,Point2f centroid);
 	~HandShape(void);
 	void MakeHand(vector<Point> startPoints, vector<Point> endPoints, vector<Point> defectPoints);
 

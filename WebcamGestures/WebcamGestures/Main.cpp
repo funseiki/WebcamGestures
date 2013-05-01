@@ -11,7 +11,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <iostream>
-
+#include <fstream>
 #include "HandShape.h";
 
 /** Namespaces **/
@@ -20,29 +20,35 @@ using namespace cv;
 /** Globals **/
 RNG rng(12345);
 
-int BUFFER_SIZE = 6;
-int MAX_FRAME_SIZE = 60;
+#define BUFFER_SIZE  6
+#define MAX_FRAME_SIZE 60
 
-//std::queue<HandShape> hands;
 std::vector<HandShape> hands;
 int state = 0;//state = 0 implies SEARCHING and state = 1 implies RECOGNITION
 HandShape startPoint;//stores the start point of our gesture search
 HandShape endPoint;//stores the end point of our gesture search
 int frameCount = 0;//stores number of frames we've seen during 'RECOGNTION' phase
-
+int frameNumber = 0;//just for testing,can be removed later
+Point2f averageStartCentroid;
+Point2f averageEndCentroid;
 // Create an object of the background subtractor
 BackgroundSubtractorMOG2 background;
 
 void getGesture(){
-	    Point2f startCentroid  = startPoint.getCentroid();
-	    Point2f endCentroid  = endPoint.getCentroid();
-		float angle = atan2(startCentroid.y - endCentroid.y, startCentroid.x - endCentroid.x);
+	    //Point2f startCentroid  = startPoint.getCentroid();
+	   // Point2f endCentroid  = endPoint.getCentroid();
+	std::ofstream myfile;
+    myfile.open ("example.txt",std::ios::app);
+	float angle = atan2(averageStartCentroid.y - averageEndCentroid.y, averageStartCentroid.x - averageEndCentroid.x);
 		std::cout<<(angle*180/3.14);
+		myfile << "Gesture finger count : " << startPoint.getfingerCount();
+		myfile << "Gesture angle : " << angle;
+		myfile.close();
 }
 bool isCurrentHandAMajority(HandShape handPair) {
 	int frequencyOfShape = 0;
 	int indexFirstOccurence = -1;
-	for(int handsIterator = 0; handsIterator < hands.size(); handsIterator) {
+	for(int handsIterator = 0; handsIterator < hands.size(); handsIterator++) {
 			HandShape hp = hands[handsIterator];
 			if(hp.getfingerCount() == handPair.getfingerCount()){
 				frequencyOfShape++;
@@ -50,7 +56,7 @@ bool isCurrentHandAMajority(HandShape handPair) {
 				if(frequencyOfShape == 1)
 					indexFirstOccurence = handsIterator;
 				//When we find a majority in previous few frames,we assign start
-				if(frequencyOfShape > (BUFFER_SIZE/2)){
+				if(frequencyOfShape == (BUFFER_SIZE/2)){
 					//if you are in the SEARCH phase,store the start point
 					if(state == 0)
 						startPoint = hands[indexFirstOccurence];
@@ -65,28 +71,51 @@ bool isCurrentHandAMajority(HandShape handPair) {
 
 }
 
+void setAverageCentroid(){
+
+	float totalX = 0;
+	float totalY = 0;
+	for(int handsIterator = 0; handsIterator < hands.size(); handsIterator++) {
+			HandShape hp = hands[handsIterator];
+			totalX += hp.getCentroid().x;
+			totalY += hp.getCentroid().y;
+	}
+	if(state == 0) {
+		averageStartCentroid.x = totalX/BUFFER_SIZE;
+		averageStartCentroid.y = totalY/BUFFER_SIZE;
+	} else {
+		averageEndCentroid.x = totalX/BUFFER_SIZE;
+		averageEndCentroid.y = totalY/BUFFER_SIZE;
+	}
+}
 void detectGesture(HandShape currentHandPair){
+	std::ofstream myfile;
+    myfile.open ("example.txt",std::ios::app);
 	//Searching for a start point to start gesture recognition
 	if(state == 0) {
+		std::cout << "Searching phase";
+		myfile << "Searching phase";
 		bool foundStart = isCurrentHandAMajority(currentHandPair);
 		if(foundStart) {
-			state = 1;
-		}
-
+			setAverageCentroid();
+			state = 1;			
+		} 
+	    
 	} else { //RECOGNITION PHASE
 		frameCount++;
-
+		std::cout << "Recognition phase";
+		myfile << "Recognition phase";
 		bool foundEnd =  !isCurrentHandAMajority(startPoint);
-		if(foundEnd || frameCount == MAX_FRAME_SIZE){
+		if(foundEnd || (frameCount == MAX_FRAME_SIZE)){
 			getGesture();
 			frameCount = 0;
-
+			state = 0;
 		}
 
 	}
 	hands.push_back(currentHandPair);
 	if(hands.size() > BUFFER_SIZE) hands.erase(hands.begin());
-
+	myfile.close();
 }
 
 
@@ -231,9 +260,17 @@ Mat * findHull(Mat src )
 
 	// Show and save!
 	std::cout<<"h5" << std::endl;
+	std::ofstream myfile;
+    myfile.open ("example.txt",std::ios::app);
+	myfile << "Frame no :" << ++frameNumber; 
+	myfile << "Number of fingers: " << hand.getfingerCount() << std::endl;
+	myfile<<"Centroid- x: "<< hand.getCentroid().x << " y: "<< hand.getCentroid().y;
+	myfile.close();
 
-	std::cout << "Number of fingers: " << hand.getfingerCount() << std::endl
-		<< "Angle: " << hand.getAngle() << std::endl;
+	std::cout<<"Frame no :" << frameNumber; 
+	std::cout << "Number of fingers: " << hand.getfingerCount() << std::endl;
+	std::cout<<"Centroid- x: "<< hand.getCentroid().x << " y: "<< hand.getCentroid().y;
+	detectGesture(hand);
 	return drawing;
 }
 
@@ -353,7 +390,7 @@ void CameraLoop()
 
 	// Open the camera
 	//camera.open(0);
-	camera.open("VideoDumpForeAsh1.avi");
+	camera.open("VideoDumpForeAsh2.avi");
 	if(!camera.isOpened())
 	{
 		std::cerr << "ERROR: NO CAMERA AVAILABLE!?" << std::endl;
@@ -361,9 +398,9 @@ void CameraLoop()
 	}
 
 	// Set camera parameters
-	camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-	camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
-
+	//camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
+	//camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+	
 	while(true)
 	{
 		Mat cameraFrame;
@@ -378,10 +415,13 @@ void CameraLoop()
 		}
 
 		// Output image to be drawn onto
-		//Mat displayedFrame(cameraFrame.size(), CV_8UC3);
+		Mat displayedFrame(cameraFrame.size(), CV_8UC3);
+		
 		Mat * out = detectHand(cameraFrame);
-		//cameraFrame.copyTo(displayedFrame);
-		if(out == NULL) continue;
+		cameraFrame.copyTo(displayedFrame);
+		//if(out == NULL) continue;
+		if(out!=NULL)
+		delete out;
 
 		// Display the interesting thing
 		imshow("Cam", cameraFrame);
@@ -413,6 +453,8 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	//CameraLoop();
-	SingleImageTest("TestVector\\im8.png");
+	
+	 CameraLoop();
+	//getchar();
+	//SingleImageTest("image.jpg");
 }

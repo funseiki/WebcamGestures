@@ -20,6 +20,11 @@ HandShape::HandShape(vector<Point> _startPoints, vector<Point> _endPoints, vecto
 
 }
 
+HandShape::HandShape(int fingerCount,Point2f centroid){
+	this->fingerCount = fingerCount;
+	this->centroid = centroid;
+}
+
 HandShape::~HandShape(void)
 {
 }
