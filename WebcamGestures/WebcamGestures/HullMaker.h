@@ -15,25 +15,32 @@ public:
 	~HullMaker(void);
 
 	Mat getHullImage();
+	void getDefectPoints(vector<Point> & starts, vector<Point> & ends, vector<Point> & defects);
+	bool isValidHull();
 
 private:
 	// Members
-	Mat image;
+	Mat image, inputImage;
 	RNG rng;
 	bool isValid;
 	vector<Point> startPoints;
 	vector<Point> endPoints;
 	vector<Point> defectPoints;
+	vector< vector<Point> > contours;
 
 	// Methods
-	void findHull(vector<vector<Point>> contours,vector<Vec4i> hierarchy, Mat input);
+	bool findHull(vector<vector<Point>> contours, Mat input);
 	int findLargestContour(vector<vector<Point>> contours);
 	Mat erodeAndDilate(Mat input);
 	Mat subtractBackground(Mat input);
 	Mat preprocess(Mat input);
 	void MakeHull(Mat input);
+	bool getDefectsSet(vector<vector<Point>> contours, vector<cv::Vec4i> & defectsSet);
+	void getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> contour, 
+					vector<Point> & starts, vector<Point> & ends,
+					vector<Point> & defects);
+	Mat buildImage(vector<vector<Point>> contours, Mat input);
 
 	// Defaults
 	void setDefaults();
 };
-
