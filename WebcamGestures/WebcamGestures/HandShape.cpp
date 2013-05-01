@@ -1,9 +1,56 @@
 #include "HandShape.h"
 #include <limits>
 #include "QueuePoint.cpp"
+#include "HullMaker.h"
+
 using namespace std;
 
 HandShape::HandShape(void)
+{
+	setDefaults();
+}
+
+HandShape::HandShape(vector<Point> _startPoints, vector<Point> _endPoints, vector<Point> _defectPoints)
+{
+	setDefaults();
+	fingerThreshold = 15;
+	MakeHand(_startPoints, _endPoints, _defectPoints);
+
+}
+
+HandShape::HandShape(int fingerCount,Point2f centroid){
+	setDefaults();
+	this->fingerCount = fingerCount;
+	this->centroid = centroid;
+	isHand = true;
+}
+
+HandShape::HandShape(Mat image)
+{
+	setDefaults();
+
+	vector<Point> _startPoints;
+	vector<Point> _endPoints;
+	vector<Point> _defectPoints;
+
+	HullMaker hull(image);
+	hull.getDefectPoints(_startPoints, _endPoints, _defectPoints);
+
+	if(hull.isValidHull())
+	{
+		MakeHand(_startPoints, _endPoints, _defectPoints);
+	}
+	else
+	{
+		isHand = false;
+	}
+}
+
+HandShape::~HandShape(void)
+{
+}
+
+void HandShape::setDefaults()
 {
 	isHand = false;
 	fingerCount = -1;
@@ -11,22 +58,6 @@ HandShape::HandShape(void)
 	centroid = Point(0,0);
 	middleFinger = Point2f(-1,-1);
 	fingerThreshold = 15;
-}
-
-HandShape::HandShape(vector<Point> _startPoints, vector<Point> _endPoints, vector<Point> _defectPoints)
-{
-	fingerThreshold = 15;
-	MakeHand(_startPoints, _endPoints, _defectPoints);
-
-}
-
-HandShape::HandShape(int fingerCount,Point2f centroid){
-	this->fingerCount = fingerCount;
-	this->centroid = centroid;
-}
-
-HandShape::~HandShape(void)
-{
 }
 
 bool HandShape::isValidHand()
@@ -116,6 +147,7 @@ void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, v
 	determineMiddleFinger();
 	angle = angleBetween(centroid, middleFinger);
 
+	isHand = true;
 }
 
 // Utility functions
@@ -166,8 +198,6 @@ void HandShape::drawHand(Mat drawing)
 		circle(drawing, centroid, radius, Scalar(255,0,255));
 		circle(drawing, centroid, 10, Scalar(255, 255, 0));
 	}
-
-	imshow("Defects", drawing);
 }
 
 // Getters

@@ -12,8 +12,9 @@ class HandShape
 {
 public:
 	HandShape(void);
-	HandShape(vector<Point> startPoints, vector<Point> endPoints, vector<Point> defectPoints);
 	HandShape(int fingerCount,Point2f centroid);
+	HandShape(vector<Point> startPoints, vector<Point> endPoints, vector<Point> defectPoints);
+	HandShape(Mat image);
 	~HandShape(void);
 	void MakeHand(vector<Point> startPoints, vector<Point> endPoints, vector<Point> defectPoints);
 
@@ -54,4 +55,7 @@ private:
 	double angleBetween(Point2f origin, Point2f onCircle);
 	void getClosestPoints(Point2f center, vector<Point> points, vector<Point> & out, int threshold);
 	double distance(Point2f one, Point2f two);
+
+	// Defaults
+	void setDefaults();
 };

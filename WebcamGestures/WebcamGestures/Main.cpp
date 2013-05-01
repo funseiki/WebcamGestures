@@ -15,7 +15,7 @@
 
 #include "HandShape.h"
 #include "HullMaker.h"
-#include "Utils.h";
+#include "Utils.h"
 
 /** Namespaces **/
 using namespace cv;
