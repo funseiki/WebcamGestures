@@ -182,3 +182,7 @@ Point2f HandShape::getCentroid()
 {
 	return centroid;
 }
+Point2f HandShape::getMiddleFinger()
+{
+	return middleFinger;
+}

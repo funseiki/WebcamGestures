@@ -23,6 +23,7 @@ public:
 	double getAngle();
 	float getRadius();
 	Point2f getCentroid();
+	Point2f getMiddleFinger();
 
 	// Displayer
 	void drawHand(Mat drawing);
