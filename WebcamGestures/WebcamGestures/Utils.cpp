@@ -67,7 +67,7 @@ Point2f findCluster(vector <Point> pointData, vector <Point> &clusterPoints, int
     float cY = centers.at<float>(topCluster0,1);
     Point2f foundCentroid(cX,cY);
 
-    std::cout<<labels;
+    //std::cout<<labels;
 //    std::cout<<"\n\nLabel0: "<<clusterChoice0<<"\n\nLabel1: "<<clusterChoice1<<"\n\nLabel2: "<<clusterChoice2;
 if(topClusterSize2 == topClusterSize1)
 {
@@ -90,7 +90,7 @@ if(topClusterSize2 == topClusterSize1)
     findLabels.pop();
     int topLabel1 = findLabels.top().label;
 
-    std::cout<<"\nCluster Labels: "<<topLabel0<<" "<<topLabel1;
+    //std::cout<<"\nCluster Labels: "<<topLabel0<<" "<<topLabel1;
 
     for(int i=0; i<sampleCount; i++)
     {
@@ -111,7 +111,7 @@ else
             clusterPoints.push_back(pointData[i]);
     }
 }
-    std::cout<<"clustered points: "<<clusterPoints.size();
+    //std::cout<<"clustered points: "<<clusterPoints.size();
 
     return foundCentroid;
     //return centers;

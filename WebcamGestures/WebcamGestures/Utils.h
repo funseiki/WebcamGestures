@@ -35,8 +35,8 @@ public:
 		Centroid = C;
 		//dist = sqrt(((P.x - C.x)*(P.x - C.x))+((P.y - C.y)*(P.y - C.y)));
 		dist = findAngleBetween(C,P) * 180 / 3.14 * -1;
-		std::cout<<"\nPoint: "<<P.x<<" "<<P.y;
-		std::cout<<"\tAngle: "<<dist << "  "<<sqrt(((P.x - C.x)*(P.x - C.x))+((P.y - C.y)*(P.y - C.y)));
+		//std::cout<<"\nPoint: "<<P.x<<" "<<P.y;
+		//std::cout<<"\tAngle: "<<dist << "  "<<sqrt(((P.x - C.x)*(P.x - C.x))+((P.y - C.y)*(P.y - C.y)));
 
 	}
 
