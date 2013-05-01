@@ -33,16 +33,16 @@ private:
 	vector< vector<Point> > contours;
 
 	// Methods
-	bool findHull(vector<vector<Point>> contours, Mat input);
-	int findLargestContour(vector<vector<Point>> contours);
+	bool findHull(vector<vector<Point> > contours, Mat input);
+	int findLargestContour(vector<vector<Point> > contours);
 	Mat erodeAndDilate(Mat input);
 	Mat subtractBackground(Mat input);
 	Mat preprocess(Mat input);
-	bool getDefectsSet(vector<vector<Point>> contours, vector<cv::Vec4i> & defectsSet);
-	void getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> contour, 
+	bool getDefectsSet(vector<vector<Point> > contours, vector<cv::Vec4i> & defectsSet);
+	void getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> contour,
 					vector<Point> & starts, vector<Point> & ends,
 					vector<Point> & defects);
-	Mat buildImage(vector<vector<Point>> contours, Mat input);
+	Mat buildImage(vector<vector<Point> > contours, Mat input);
 
 	// Defaults
 	void setDefaults();

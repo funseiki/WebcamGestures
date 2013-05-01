@@ -64,7 +64,7 @@ void HullMaker::MakeHull(Mat input)
 }
 
 // Helper methods
-bool HullMaker::findHull(vector<vector<Point>> contours, Mat input)
+bool HullMaker::findHull(vector<vector<Point> > contours, Mat input)
 {
 	// Set of convexity defects
 	vector<cv::Vec4i> defectsSet(contours.size());
@@ -83,14 +83,14 @@ bool HullMaker::findHull(vector<vector<Point>> contours, Mat input)
 
 	// Set the defect points, we're assuming that we only have the one contour
 	getDefects(defectsSet, contours[0], startPoints, endPoints, defectPoints);
-	if(startPoints.size() <= 0)
+	if(startPoints.size() <= 3)
 	{
 		return false;
 	}
 	return true;
 }
 
-Mat HullMaker::buildImage(vector<vector<Point>> contours, Mat input)
+Mat HullMaker::buildImage(vector<vector<Point> > contours, Mat input)
 {
 	vector< vector<Point> > hull(contours.size());
 	Mat drawing(input.size(), CV_8UC3);
@@ -111,7 +111,7 @@ Mat HullMaker::buildImage(vector<vector<Point>> contours, Mat input)
 	return drawing;
 }
 
-void HullMaker::getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> contour, 
+void HullMaker::getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> contour,
 					vector<Point> & starts, vector<Point> & ends,
 					vector<Point> & defects)
 {
@@ -153,7 +153,7 @@ void HullMaker::getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> 
 	}
 }
 
-bool HullMaker::getDefectsSet(vector<vector<Point>> contours, vector<cv::Vec4i> & defectsSet)
+bool HullMaker::getDefectsSet(vector<vector<Point> > contours, vector<cv::Vec4i> & defectsSet)
 {
 	/* Each Defect is a vector of 4 elements
 	 * It has the start, end and most "deep" point (Refer to documentation)
@@ -187,7 +187,7 @@ bool HullMaker::getDefectsSet(vector<vector<Point>> contours, vector<cv::Vec4i> 
 	return true;
 }
 
-int HullMaker::findLargestContour(vector<vector<Point>> contours)
+int HullMaker::findLargestContour(vector<vector<Point> > contours)
 {
 	// Index of largest contour
 	int indexOfBiggestContour = -1;

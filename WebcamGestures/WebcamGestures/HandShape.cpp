@@ -101,9 +101,8 @@ void HandShape::determineHandCenter(vector<Point> points)
 {
 	Point2f center;
 	vector<Point> closest;
-	float rad;
-	findCentroid(points, center, rad);
-	getClosestPoints(center, points, closest, 3);
+	float rad=0;
+	findCluster(points, closest,3);
 	findCentroid(closest, center, rad);
 	centroid = center;
 	radius = rad;

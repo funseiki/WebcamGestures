@@ -2,6 +2,121 @@
 
 using namespace std;
 
+Point2f findCluster(vector <Point> pointData, vector <Point> &clusterPoints, int clusterCount =3 )
+{
+    int sampleCount = pointData.size();
+    int dimensions = 2;
+    float pointsdata[sampleCount*2]; //[] = {1,1, 2,2, 6,6, 5,5, 10,10};
+
+    int cnt = 0;
+    for(int a=0; a<sampleCount; a++){
+    pointsdata[cnt] = pointData[a].x;
+    cnt++;
+    pointsdata[cnt] = pointData[a].y;
+    cnt++;
+    }
+    Mat points(sampleCount,dimensions, CV_32F,pointsdata);
+
+    //int clusterCount = 3; //i want 3 averaged points back
+
+    cv::Mat labels;
+    Mat centers(clusterCount, 1, points.type());
+
+    kmeans(points, clusterCount, labels, cv::TermCriteria(), 2,cv::KMEANS_PP_CENTERS, centers);
+
+
+    //std::cout<<"Data: \n"<<points<<std::endl;
+    //std::cout<<"Labels: \n"<<labels<<std::endl;
+
+    int labelPt0 = 0;//labels.at<int>(0,1);
+    int labelPt1 = 0;
+    int labelPt2 = 0;
+
+    for(int i=0; i<sampleCount; i++)
+    {
+        int val = labels.at<int>(0,i);
+
+        if(val == 0 )
+            labelPt0++;
+        else if(val == 1)
+            labelPt1++;
+        else if (val==2)
+            labelPt2++;
+    }
+
+    //std::priority_queue <labelStruct> PQ;
+
+    std::priority_queue <labelStruct, vector<labelStruct>, std::greater<vector<labelStruct>::value_type> > PQ;
+
+    PQ.push(labelStruct(labelPt0,0));
+    PQ.push(labelStruct(labelPt1,1));
+    PQ.push(labelStruct(labelPt2,2));
+    //std::cout<<"\n\nSize of PQ: "<<PQ.size();
+
+    int topCluster0 = PQ.top().label;
+	int topClusterSize0 = PQ.top().labelCount;
+    PQ.pop();
+	int topCluster1 = PQ.top().label;
+	int topClusterSize1 = PQ.top().labelCount;
+    PQ.pop();
+	int topCluster2 = PQ.top().label;
+	int topClusterSize2 = PQ.top().labelCount;
+    PQ.pop();
+
+    float cX = centers.at<float>(topCluster0,0);
+    float cY = centers.at<float>(topCluster0,1);
+    Point2f foundCentroid(cX,cY);
+
+    std::cout<<labels;
+//    std::cout<<"\n\nLabel0: "<<clusterChoice0<<"\n\nLabel1: "<<clusterChoice1<<"\n\nLabel2: "<<clusterChoice2;
+if(topClusterSize2 == topClusterSize1)
+{
+    std::priority_queue <QueuePoint2> findLabels;
+
+
+    for(int i=0; i<clusterCount; i++)
+    {
+        float X = centers.at<float>(i,0);
+        float Y = centers.at<float>(i,1);
+
+        Point2f clusterCenter(X,Y);
+
+        QueuePoint2 qpl (clusterCenter, foundCentroid, i );
+
+        findLabels.push(qpl);
+    }
+
+    int topLabel0 = findLabels.top().label;
+    findLabels.pop();
+    int topLabel1 = findLabels.top().label;
+
+    std::cout<<"\nCluster Labels: "<<topLabel0<<" "<<topLabel1;
+
+    for(int i=0; i<sampleCount; i++)
+    {
+        int val = labels.at<int>(0,i);
+
+        if((val == topLabel0) || (val == topLabel1))
+            clusterPoints.push_back(pointData[i]);
+    }
+
+}
+else
+{
+	for(int i=0; i<sampleCount; i++)
+    {
+        int val = labels.at<int>(0,i);
+
+        if((val == topCluster0) || (val == topCluster1))
+            clusterPoints.push_back(pointData[i]);
+    }
+}
+    std::cout<<"clustered points: "<<clusterPoints.size();
+
+    return foundCentroid;
+    //return centers;
+}
+
 int classifyMotion(float Orientation, float thresholdRange, bool isRadians = true, bool showRange = false)
 {
 	float pi;
@@ -181,4 +296,25 @@ bool operator < (const QueuePoint & node1, const QueuePoint &node2)
 bool operator > (const QueuePoint & node1, const QueuePoint &node2)
 {
 	return node1.dist < node2.dist;
+}
+
+
+bool operator < (const QueuePoint2 & node1, const QueuePoint2 &node2)
+{
+	return node1.dist > node2.dist;
+}
+//Overload the > operator.
+bool operator > (const QueuePoint2 & node1, const QueuePoint2 &node2)
+{
+	return node1.dist < node2.dist;
+}
+
+bool operator < (const labelStruct & node1, const labelStruct &node2)
+{
+	return node1.labelCount > node2.labelCount;
+}
+//Overload the > operator.
+bool operator > (const labelStruct & node1, const labelStruct &node2)
+{
+	return node1.labelCount < node2.labelCount;
 }
