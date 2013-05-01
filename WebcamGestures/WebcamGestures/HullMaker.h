@@ -14,6 +14,10 @@ public:
 	HullMaker(Mat input);
 	~HullMaker(void);
 
+	// Main method
+	void MakeHull(Mat input);
+
+	// Getter methods
 	Mat getHullImage();
 	void getDefectPoints(vector<Point> & starts, vector<Point> & ends, vector<Point> & defects);
 	bool isValidHull();
@@ -34,7 +38,6 @@ private:
 	Mat erodeAndDilate(Mat input);
 	Mat subtractBackground(Mat input);
 	Mat preprocess(Mat input);
-	void MakeHull(Mat input);
 	bool getDefectsSet(vector<vector<Point>> contours, vector<cv::Vec4i> & defectsSet);
 	void getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> contour, 
 					vector<Point> & starts, vector<Point> & ends,
