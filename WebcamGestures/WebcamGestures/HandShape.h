@@ -2,7 +2,9 @@
 #include <cv.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include<opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
+#include <cmath>
+
 using namespace cv;
 
 class HandShape
@@ -13,6 +15,8 @@ public:
 	~HandShape(void);
 	void MakeHand(vector<Point> startPoints, vector<Point> endPoints, vector<Point> defectPoints);
 
+	bool isValidHand();
+
 	// Getters
 	int getfingerCount();
 	int getAngle();
@@ -21,13 +25,19 @@ public:
 
 	// Displayer
 	void drawHand(Mat drawing);
+
 private:
 	// Members
 	int fingerCount;
-	int angle;
+	Point longestFinger;
+	vector<Point> fingerPoints;
+	bool isHand;
+
+	float angle;
 	Point2f centroid;
 	float radius;
 	double fingerThreshold;
+
 
 	// Hull information
 	vector<Point> startPoints;
@@ -37,4 +47,5 @@ private:
 	// Methods
 	void findCentroid(vector<Point> & points,Point2f & center,float & radius);
 	double distance(Point one, Point two);
+	void determineLongestFinger();
 };

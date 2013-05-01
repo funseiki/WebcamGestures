@@ -171,7 +171,10 @@ Mat * findHull(Mat src )
 	getDefects(convexityDefectsSet, startPoints, endPoints, defectPoints, contours[0]);
 
 	HandShape hand(startPoints, endPoints, defectPoints);
-	hand.drawHand(*drawing);
+	if(hand.isValidHand())
+	{
+		hand.drawHand(*drawing);
+	}
 
 	// Show and save!
 	std::cout<<"h5" << std::endl;
@@ -354,6 +357,6 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	//CameraLoop();
-	SingleImageTest("image.jpg");
+	CameraLoop();
+	//SingleImageTest("image.jpg");
 }

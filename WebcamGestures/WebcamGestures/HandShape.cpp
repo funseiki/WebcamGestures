@@ -1,8 +1,10 @@
 #include "HandShape.h"
+#include <limits>
 using namespace std;
 
 HandShape::HandShape(void)
 {
+	isHand = false;
 	fingerCount = -1;
 	angle = -1;
 	centroid = Point(0,0);
@@ -13,16 +15,28 @@ HandShape::HandShape(vector<Point> _startPoints, vector<Point> _endPoints, vecto
 {
 	fingerThreshold = 15;
 	MakeHand(_startPoints, _endPoints, _defectPoints);
+
 }
 
 HandShape::~HandShape(void)
 {
 }
 
-// Helpers
+bool HandShape::isValidHand()
+{
+	return isHand;
+}
 
+
+// Helpers
 void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, vector<Point> _defectPoints)
 {
+	if(!_startPoints.size() || !_endPoints.size() || !_defectPoints.size())
+	{
+		isHand = false;
+		return;
+	}
+
 	startPoints = _startPoints;
 	endPoints = _endPoints;
 	defectPoints = _defectPoints;
@@ -42,6 +56,7 @@ void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, v
 		if(curr < fingerThreshold)
 		{
 			fingerCount++;
+			fingerPoints.push_back(currStart);
 		}
 		prevEnd = endPoints[i];
 	}
@@ -58,6 +73,16 @@ void HandShape::findCentroid(vector<Point> & points,Point2f & center,float & rad
 		center.x = -1;
 		center.y = -1;
 		radius = -1;
+	}
+}
+
+void HandShape::determineLongestFinger()
+{
+	double currDist = numeric_limits<double>::max();
+	for(int i = 0; i < fingerPoints.size(); i++)
+	{
+		double newDist = distance(fingerPoints[i], centroid);
+
 	}
 }
 
