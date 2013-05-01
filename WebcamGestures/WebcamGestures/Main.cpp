@@ -428,5 +428,5 @@ int SingleImageTest(std::string filename)
 int main()
 {
 	//CameraLoop();
-	SingleImageTest("image.jpg");
+	SingleImageTest("TestVector\\im4.png");
 }

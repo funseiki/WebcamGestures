@@ -1,5 +1,6 @@
 #include "HandShape.h"
 #include <limits>
+#include "QueuePoint.cpp"
 using namespace std;
 
 HandShape::HandShape(void)
@@ -36,6 +37,42 @@ void HandShape::determineMiddleFinger()
 	findCentroid(fingerPoints, middleFinger, rad);
 }
 
+void HandShape::getClosestPoints(Point2f center, vector<Point> points, vector<Point> & out, int threshold=5)
+{
+	priority_queue<QueuePoint> pq;
+
+	// Order by closest to the center
+	for(int i = 0; i < points.size(); i++)
+	{
+		pq.push(QueuePoint(points[i], center));
+	}
+
+	if(pq.size() < threshold)
+	{
+		threshold = pq.size();
+	}
+
+	int count = 0;
+	while(count < threshold)
+	{
+		out.push_back(pq.top().Pt);
+		pq.pop();
+		count++;
+	}
+}
+
+void HandShape::determineHandCenter(vector<Point> points)
+{
+	Point2f center;
+	vector<Point> closest;
+	float rad;
+	findCentroid(points, center, rad);
+	getClosestPoints(center, points, closest, 3);
+	findCentroid(closest, center, rad);
+	centroid = center;
+	radius = rad;
+}
+
 // Helpers
 void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, vector<Point> _defectPoints)
 {
@@ -51,7 +88,8 @@ void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, v
 	fingerCount = 0;
 
 	// Find the centroid of this hand
-	findCentroid(defectPoints, centroid, radius);
+	//findCentroid(defectPoints, centroid, radius);
+	determineHandCenter(defectPoints);
 
 	// Count the fingers
 	Point prevEnd = endPoints[endPoints.size()-1];

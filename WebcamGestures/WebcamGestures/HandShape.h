@@ -4,6 +4,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <cmath>
+#include <queue>
 
 using namespace cv;
 
@@ -45,8 +46,10 @@ private:
 	vector<Point> defectPoints;
 
 	// Methods
+	void determineHandCenter(vector<Point> points);
 	void findCentroid(vector<Point> & points,Point2f & center,float & radius);
-	double distance(Point2f one, Point2f two);
 	void determineMiddleFinger();
 	double angleBetween(Point2f origin, Point2f onCircle);
+	void getClosestPoints(Point2f center, vector<Point> points, vector<Point> & out, int threshold);
+	double distance(Point2f one, Point2f two);
 };
