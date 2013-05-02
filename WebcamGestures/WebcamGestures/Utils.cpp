@@ -248,6 +248,11 @@ int classifyMotion(float Orientation, float thresholdRange, bool isRadians = tru
 		return RIGHT;
 }
 
+double findDistanceBetween(Point2f one, Point2f two) {
+	return sqrt(((one.x - two.x)*(one.x - two.x))+((one.y - two.y)*(one.y - two.y)));
+}
+
+
 //returns in radians
 double findAngleBetween(Point2f origin, Point2f onCircle)
 {

@@ -31,16 +31,20 @@ int frameCount = 0;//stores number of frames we've seen during 'RECOGNTION' phas
 int frameNumber = 0;//just for testing,can be removed later
 Point2f averageStartCentroid;
 Point2f averageEndCentroid;
-
+HandShape previousHand;
+int countStillFrame = 0;
 void getGesture(){
 		//Point2f startCentroid  = startPoint.getCentroid();
 	   // Point2f endCentroid  = endPoint.getCentroid();
 	std::ofstream myfile;
 	myfile.open ("example.txt",std::ios::app);
+	myfile << "StartCentroid x :" << averageStartCentroid.x <<" y: "<< averageStartCentroid.y << std::endl;
+	myfile << "EndCentroid x :" << averageEndCentroid.x <<" y: "<< averageEndCentroid.y << std::endl;
 	float angle = atan2(averageStartCentroid.y - averageEndCentroid.y, averageStartCentroid.x - averageEndCentroid.x);
 		std::cout<<(angle*180/3.14);
 		myfile << "Gesture finger count : " << startPoint.getfingerCount();
 		myfile << "Gesture angle : " << angle;
+		myfile << "Motion : "<< classifyMotion(angle,0.3,true,false) << std::endl;
 		myfile.close();
 }
 bool isCurrentHandAMajority(HandShape handPair) {
@@ -86,13 +90,32 @@ void setAverageCentroid(){
 		averageEndCentroid.y = totalY/BUFFER_SIZE;
 	}
 }
+
+void detectGestureByMotion(HandShape currentHand){
+	if(state == 0) { //Not started tracking 
+		int dist = findDistanceBetween(currentHand.getCentroid(),previousHand.getCentroid());
+		if(dist < 10) {
+			countStillFrame++;
+			if(countStillFrame == 5){
+				setAverageCentroid();
+				state = 1;		
+				std::cout <<"Tracking started"<<std::endl;
+			}
+		} else {
+			countStillFrame = 0;
+		}
+	}
+	hands.push_back(currentHand);
+	if(hands.size() > BUFFER_SIZE) hands.erase(hands.begin());
+}
 void detectGesture(HandShape currentHandPair){
 	std::ofstream myfile;
 	myfile.open ("example.txt",std::ios::app);
 	//Searching for a start point to start gesture recognition
+	 
 	if(state == 0) {
-		std::cout << "Searching phase";
-		myfile << "Searching phase";
+	//	std::cout << "Searching phase";
+	//	myfile << "Searching phase" << std::endl;
 		bool foundStart = isCurrentHandAMajority(currentHandPair);
 		if(foundStart) {
 			setAverageCentroid();
@@ -101,10 +124,11 @@ void detectGesture(HandShape currentHandPair){
 
 	} else { //RECOGNITION PHASE
 		frameCount++;
-		std::cout << "Recognition phase";
-		myfile << "Recognition phase";
+		//std::cout << "Recognition phase";
+		//myfile << "Recognition phase" << std::endl;
 		bool foundEnd =  !isCurrentHandAMajority(startPoint);
 		if(foundEnd || (frameCount == MAX_FRAME_SIZE)){
+			setAverageCentroid();
 			getGesture();
 			frameCount = 0;
 			state = 0;
@@ -124,7 +148,7 @@ void CameraLoop()
 
 	// Open the camera
 	//camera.open(0);
-	camera.open("VideoDumpForeAsh2.avi");
+	camera.open("VideoDumpForeAsh1.avi");
 	if(!camera.isOpened())
 	{
 		std::cerr << "ERROR: NO CAMERA AVAILABLE!?" << std::endl;
@@ -134,9 +158,20 @@ void CameraLoop()
 	// Set camera parameters
 	//camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
 	//camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
-
+	int totalHandCount = 0;
+	int validHandCount = 0;
+	
 	while(true)
 	{
+		totalHandCount++;
+		if((totalHandCount - validHandCount) > 10 && state == 1){
+			setAverageCentroid();
+			getGesture();
+			state = 0;
+			std::cout <<"Tracking stopped"<<std::endl;
+			previousHand.~HandShape();
+			new(&previousHand) HandShape();
+		}
 		Mat cameraFrame;
 
 		// Gets the current camera frame
@@ -152,9 +187,16 @@ void CameraLoop()
 		Mat drawing;
 		if(hand.isValidHand())
 		{
+			validHandCount = totalHandCount;
+			std::cout << "Frame No :" << totalHandCount;
 			hand.drawHand(drawing);
 			imshow("Hand", drawing);
-			detectGesture(hand);
+			std::cout <<" Current centroid - x : "<< hand.getCentroid().x <<" y: :" <<  hand.getCentroid().y;
+			std::cout << "Distance :" << findDistanceBetween(hand.getCentroid(),previousHand.getCentroid()) << std::endl;
+			waitKey(0);
+		//	if(count > 30)
+			detectGestureByMotion(hand);
+			previousHand = hand;
 		}
 
 		// Display the interesting thing
@@ -194,7 +236,7 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	 //CameraLoop();
+	 CameraLoop();
 	//getchar();
-	SingleImageTest("TestVector\\im2.png");
+	//SingleImageTest("TestVector\\im2.png");
 }

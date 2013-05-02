@@ -12,11 +12,12 @@ using namespace cv;
 
 #define UP 0
 #define DOWN 1
-#define LEFT 2
-#define RIGHT 3
+#define LEFT 3
+#define RIGHT 2
 #define PI 3.14159265
 
 int classifyMotion(float Orientation, float thresholdRange, bool isRadians, bool showRange);
+double findDistanceBetween(Point2f one, Point2f two);
 double findAngleBetween(Point2f origin, Point2f onCircle);
 Point2f findCluster(vector <Point> pointData, vector <int> &clusterPoints, int clusterCount );
 
