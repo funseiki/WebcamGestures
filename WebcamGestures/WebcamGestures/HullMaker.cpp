@@ -22,7 +22,7 @@ void HullMaker::setDefaults()
 	rng = RNG(12345);
 	isValid = false;
 	image(Rect(0,0,0,0));
-	thresholdRatio = 10.0/465.0;
+	thresholdRatio = 10.0/500.0;
 }
 
 // Getters

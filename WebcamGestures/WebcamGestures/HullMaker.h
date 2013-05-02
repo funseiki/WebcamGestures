@@ -34,7 +34,7 @@ private:
 	vector< vector<Point> > contours;
 
 	// Threshold Ratio: A magic number.
-	//		Found that a threshold of ~10 for a hull of ~465 produced good results
+	//		Found that a threshold of ~10 for a hull of ~465-500 produced good results
 	double thresholdRatio;
 	float hullLength;
 
