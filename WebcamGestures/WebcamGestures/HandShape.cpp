@@ -59,7 +59,7 @@ void HandShape::setDefaults()
 	middleFinger = Point2f(-1,-1);
 	radiusMin = 10;
 	radiusMax = 500;
-	fingerThreshold = 15;
+	fingerThreshold = 20;
 }
 
 bool HandShape::isValidHand()
@@ -195,7 +195,7 @@ void HandShape::drawHand(Mat & drawing)
 {
 	if(contourImage.size().width > 0)
 	{
-		drawing = contourImage;
+		drawing = contourImage.clone();
 	}
 
 	for(unsigned int i = 0; i < fingerPoints.size(); i++)
@@ -216,7 +216,7 @@ void HandShape::drawContour(Mat & drawing)
 {
 	if(contourImage.size().width > 0)
 	{
-		drawing = contourImage;
+		drawing = contourImage.clone();
 	}
 
 	for(unsigned int i = 0; i<startPoints.size(); i++)
