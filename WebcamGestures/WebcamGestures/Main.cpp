@@ -86,8 +86,8 @@ void CameraLoop(std::string filename = "")
 {
 	// 2.0 Api
 	VideoCapture camera;
-	int history = 200;
-	float learningRate = 0.001;
+	int history = 100;
+	float learningRate = 0.0008;
 	bool subtractBackground = false;
 	// Create an object of the background subtractor
 	BackgroundSubtractorMOG2 background(history,16,false);
