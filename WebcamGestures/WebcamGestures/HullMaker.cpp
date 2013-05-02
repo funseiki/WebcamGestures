@@ -128,7 +128,7 @@ bool HullMaker::findHull(vector<vector<Point> > contours, Mat input)
 	vector<cv::Vec4i> defectsSet(contours.size());
 
 	// If we have an invalid contour, there's nothing we can do
-	if(contours.size() < 1 || contours[0].size() <= 3)
+	if(contours.size() < 1 || contours[0].size() <= 4)
 	{
 		return false;
 	}
@@ -144,6 +144,12 @@ bool HullMaker::findHull(vector<vector<Point> > contours, Mat input)
 	// Determine size of the hull
 	minEnclosingCircle(contours[0], center, radius);
 	hullLength = radius*2;
+	double contourSize = contourArea(contours[0]);
+	//std::cout << "Contour area: " << contourSize << std::endl;
+	if(contourSize < 10000)
+	{
+		return false;
+	}
 
 	// Set the defect points, we're assuming that we only have the one contour
 	try
@@ -154,7 +160,7 @@ bool HullMaker::findHull(vector<vector<Point> > contours, Mat input)
 	{
 		std::cout << "Exception: " << e.what() << std::endl;
 	}
-	if(startPoints.size() <= 3)
+	if(startPoints.size() <= 4)
 	{
 		return false;
 	}
@@ -217,13 +223,13 @@ bool HullMaker::getDefectsSet(vector<vector<Point> > contours, vector<cv::Vec4i>
 	return true;
 }
 
-int HullMaker::findLargestContour(vector<vector<Point> > contours)
+int HullMaker::findLargestContour(vector<vector<Point> > contours, unsigned int & sizeOfBiggestContour)
 {
 	// Index of largest contour
 	int indexOfBiggestContour = -1;
 
 	// Size of contour (temp var)
-	unsigned int sizeOfBiggestContour = 0;
+	sizeOfBiggestContour = 0;
 
 	// Iterate through each contour
 	for (unsigned int i = 0; i < contours.size(); i++)
@@ -280,7 +286,8 @@ Mat HullMaker::subtractBackground(Mat input, BackgroundSubtractorMOG2 & bgSub, d
 	// Find and draw Contours
 	findContours(cleaned, contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
 	drawContours(resized, contours, -1, cv::Scalar(0,0,255),2);
-	int s = findLargestContour(contours);
+	unsigned int contourSize;
+	int s = findLargestContour(contours, contourSize);
 
 	Mat foreground = Mat::zeros( input.size(), CV_8UC1 );
 	drawContours( foreground, contours, s, Scalar(255), -1, 8);

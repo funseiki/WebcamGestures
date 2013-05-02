@@ -42,7 +42,7 @@ private:
 
 	// Methods
 	bool findHull(vector<vector<Point> > contours, Mat input);
-	int findLargestContour(vector<vector<Point> > contours);
+	int findLargestContour(vector<vector<Point> > contours, unsigned int & sizeOfBiggestContour);
 	Mat erodeAndDilate(Mat input);
 	Mat subtractBackground(Mat input, BackgroundSubtractorMOG2 & bgSub, double learningRate);
 	Mat preprocess(Mat input);
