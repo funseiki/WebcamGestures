@@ -22,6 +22,7 @@ void HullMaker::setDefaults()
 	rng = RNG(12345);
 	isValid = false;
 	image(Rect(0,0,0,0));
+	thresholdRatio = 10.0/465.0;
 }
 
 // Getters
@@ -45,6 +46,11 @@ void HullMaker::getDefectPoints(vector<Point> & starts, vector<Point> & ends, ve
 bool HullMaker::isValidHull()
 {
 	return isValid;
+}
+
+float HullMaker::getHullLength()
+{
+	return hullLength;
 }
 
 // Main method
@@ -125,8 +131,15 @@ bool HullMaker::findHull(vector<vector<Point> > contours, Mat input)
 		return false;	// Invalid set
 	}
 
+	Point2f center;
+	float radius;
+	// Determine size of the hull
+	minEnclosingCircle(contours[0], center, radius);
+	hullLength = radius*2;
+	std::cout << "Size of the circle: " << hullLength << std::endl;
+
 	// Set the defect points, we're assuming that we only have the one contour
-	getDefects(defectsSet, contours[0], startPoints, endPoints, defectPoints);
+	getDefects(defectsSet, contours[0], startPoints, endPoints, defectPoints, hullLength*thresholdRatio);
 	if(startPoints.size() <= 3)
 	{
 		return false;

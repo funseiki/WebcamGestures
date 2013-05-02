@@ -21,6 +21,7 @@ public:
 	Mat getHullImage();
 	void getDefectPoints(vector<Point> & starts, vector<Point> & ends, vector<Point> & defects);
 	bool isValidHull();
+	float getHullLength();
 
 private:
 	// Members
@@ -31,6 +32,11 @@ private:
 	vector<Point> endPoints;
 	vector<Point> defectPoints;
 	vector< vector<Point> > contours;
+
+	// Threshold Ratio: A magic number.
+	//		Found that a threshold of ~10 for a hull of ~465 produced good results
+	double thresholdRatio;
+	float hullLength;
 
 	// Methods
 	bool findHull(vector<vector<Point> > contours, Mat input);
