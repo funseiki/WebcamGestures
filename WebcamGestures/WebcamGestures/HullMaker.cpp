@@ -284,8 +284,10 @@ Mat HullMaker::subtractBackground(Mat input, BackgroundSubtractorMOG2 & bgSub, d
 
 	Mat foreground = Mat::zeros( input.size(), CV_8UC1 );
 	drawContours( foreground, contours, s, Scalar(255), -1, 8);
+	imshow("Foregound", resized);
 
 	Mat bgr(foreground.size(), CV_8UC3, Scalar(0,0,0));
+
 	//set pixels masked by blackWhite to blue
 	bgr.setTo(Scalar(255,255,255), foreground);
 	return bgr;
