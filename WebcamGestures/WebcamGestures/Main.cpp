@@ -180,28 +180,13 @@ int SingleImageTest(std::string filename)
 		std::cerr<<"Can't open file";
 		return -1;
 	}
-
-	//detectHand(src);
-	HullMaker hull(src);
-	vector<Point> starts;
-	vector<Point> ends;
-	vector<Point> defects;
-
-	// Get the defect points
-	hull.getDefectPoints(starts, ends, defects);
-	if(hull.isValidHull())
+	HandShape hand(src);
+	Mat drawing;
+	if(hand.isValidHand())
 	{
-		// Display the hull
-		Mat contourImage = hull.getHullImage();
-		imshow("Contour", contourImage);
-
-		// Identify the hand
-		HandShape hand(starts, ends, defects);
-		if(hand.isValidHand())
-		{
-			hand.drawHand(contourImage);
-			detectGesture(hand);
-		}
+		hand.drawHand(drawing);
+		imshow("Hand", drawing);
+		detectGesture(hand);
 	}
 	imshow("Original", src);
 	waitKey(0);
@@ -209,7 +194,7 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	 CameraLoop();
+	 //CameraLoop();
 	//getchar();
-	//SingleImageTest("image.jpg");
+	SingleImageTest("TestVector\\im4.png");
 }
