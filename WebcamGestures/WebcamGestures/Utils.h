@@ -18,7 +18,7 @@ using namespace cv;
 
 int classifyMotion(float Orientation, float thresholdRange, bool isRadians, bool showRange);
 double findAngleBetween(Point2f origin, Point2f onCircle);
-Point2f findCluster(vector <Point> pointData, vector <Point> &clusterPoints, int clusterCount );
+Point2f findCluster(vector <Point> pointData, vector <int> &clusterPoints, int clusterCount );
 
 class QueuePoint
 {

@@ -2,7 +2,7 @@
 
 using namespace std;
 
-Point2f findCluster(vector <Point> pointData, vector <Point> &clusterPoints, int clusterCount =3 )
+Point2f findCluster(vector <Point> pointData, vector <int> &clusterPoints, int clusterCount =3 )
 {
 	int sampleCount = pointData.size();
 	int dimensions = 2;
@@ -95,7 +95,7 @@ Point2f findCluster(vector <Point> pointData, vector <Point> &clusterPoints, int
 			int val = labels.at<int>(i);
 
 			if((val == topLabel0) || (val == topLabel1))
-				clusterPoints.push_back(pointData[i]);
+				clusterPoints.push_back(i);
 		}
 
 	}
@@ -106,7 +106,7 @@ Point2f findCluster(vector <Point> pointData, vector <Point> &clusterPoints, int
 			int val = labels.at<int>(i);
 
 			if((val == topCluster0) || (val == topCluster1))
-				clusterPoints.push_back(pointData[i]);
+				clusterPoints.push_back(i);
 		}
 	}
 	//std::cout<<"clustered points: "<<clusterPoints.size();
