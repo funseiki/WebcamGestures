@@ -1,7 +1,7 @@
 #include "HandShape.h"
 #include <limits>
-#include "QueuePoint.cpp"
 #include "HullMaker.h"
+#include "Utils.h"
 
 using namespace std;
 
