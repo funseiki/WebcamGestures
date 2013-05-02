@@ -42,6 +42,8 @@ private:
 	Point2f centroid;
 	float radius;
 	double fingerThreshold;
+	float radiusMin;
+	float radiusMax;
 
 	Mat contourImage;
 
@@ -51,7 +53,7 @@ private:
 	vector<Point> defectPoints;
 
 	// Methods
-	void determineHandCenter(vector<Point> points);
+	bool determineHandCenter(vector<Point> points);
 	void findCentroid(vector<Point> & points,Point2f & center,float & radius);
 	void determineMiddleFinger();
 	double angleBetween(Point2f origin, Point2f onCircle);

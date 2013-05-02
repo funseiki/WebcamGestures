@@ -27,6 +27,7 @@ HandShape::HandShape(int fingerCount,Point2f centroid){
 HandShape::HandShape(Mat image)
 {
 	setDefaults();
+	radiusMax = std::min(image.size().width, image.size().height);
 
 	vector<Point> _startPoints;
 	vector<Point> _endPoints;
@@ -58,6 +59,8 @@ void HandShape::setDefaults()
 	centroid = Point(0,0);
 	middleFinger = Point2f(-1,-1);
 	fingerThreshold = 15;
+	radiusMin = 10;
+	radiusMax = 500;
 }
 
 bool HandShape::isValidHand()
@@ -97,7 +100,7 @@ void HandShape::getClosestPoints(Point2f center, vector<Point> points, vector<Po
 	}
 }
 
-void HandShape::determineHandCenter(vector<Point> points)
+bool HandShape::determineHandCenter(vector<Point> points)
 {
 	Point2f center;
 	vector<Point> closest;
@@ -106,6 +109,14 @@ void HandShape::determineHandCenter(vector<Point> points)
 	findCentroid(closest, center, rad);
 	centroid = center;
 	radius = rad;
+	if(radius < radiusMin || radius > radiusMax)
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
 }
 
 // Helpers
@@ -124,7 +135,11 @@ void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, v
 
 	// Find the centroid of this hand
 	//findCentroid(defectPoints, centroid, radius);
-	determineHandCenter(defectPoints);
+	if(!determineHandCenter(defectPoints))
+	{
+		isHand = false;
+		return;
+	}
 
 	// Count the fingers
 	Point prevEnd = endPoints[endPoints.size()-1];

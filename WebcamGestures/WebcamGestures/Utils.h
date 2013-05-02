@@ -6,6 +6,7 @@
 #include <iostream>
 #include <queue>
 #include <vector>
+#include <functional>
 
 using namespace cv;
 
@@ -65,12 +66,12 @@ public:
 
 struct labelStruct
 {
-    int labelCount;
-    int label;
+	int labelCount;
+	int label;
 
-    labelStruct(int count, int l)
-    {
-        labelCount = count;
-        label = l;
-    }
+	labelStruct(int count, int l)
+	{
+		labelCount = count;
+		label = l;
+	}
 };
