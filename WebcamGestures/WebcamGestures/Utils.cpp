@@ -123,7 +123,6 @@ int classifyMotion(float Orientation, float thresholdRange, bool isRadians = tru
 		pi = PI;
 	else
 		pi = 180;
-
 	float Range = thresholdRange * pi/2;
 	float vectorOrientation = Orientation;
 
@@ -162,7 +161,7 @@ int classifyMotion(float Orientation, float thresholdRange, bool isRadians = tru
 		cout<<"\nLEFT Range: "<<Lp<<" - "<<Ln;
 		cout<<"\nRIGHT Range: "<<Rp<<" - "<<Rn;
 		cout<<"\nRange: "<<Range;
-		cout<<"\nInput:"<<vectorOrientation;
+		cout<<"\nOrientation:"<<vectorOrientation << endl;
 	}
 
 	if(((vectorOrientation<= Up)&&(vectorOrientation >= U)) || ((vectorOrientation<= U)&&(vectorOrientation >= Un)) )

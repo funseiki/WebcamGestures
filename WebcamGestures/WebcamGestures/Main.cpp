@@ -30,9 +30,9 @@ Point2f averageEndCentroid;
 HandShape previousHand;
 int countStillFrame = 0;
 void getGesture(){
-		float angle = atan2(averageStartCentroid.y - averageEndCentroid.y, averageStartCentroid.x - averageEndCentroid.x);
+		float angle = findAngleBetween(averageStartCentroid, averageEndCentroid);//atan2(averageStartCentroid.y - averageEndCentroid.y, averageStartCentroid.x - averageEndCentroid.x);
 		
-		int direction = classifyMotion(angle,0.3,true,false);
+		int direction = classifyMotion(angle,0.3,true,true);
 		
 		String directionStr = "";
 		if(direction == 0) directionStr = "UP";
@@ -121,7 +121,7 @@ void CameraLoop(std::string filename = "")
 			previousHand.~HandShape();
 			new(&previousHand) HandShape();
 		}
-		Mat cameraFrame;
+		Mat cameraFrame, mirror, mirrorHand;
 
 		// Gets the current camera frame
 		camera >> cameraFrame;
@@ -131,21 +131,22 @@ void CameraLoop(std::string filename = "")
 			std::cerr << "ERROR: NO CAMERA FRAME!?" << std::endl;
 			exit(1);
 		}
-
+		flip(cameraFrame, mirror, 1);
 		HandShape hand(cameraFrame);
 		Mat drawingContour, drawingHand;
 		if(hand.isValidHand())
 		{
 			validHandCount = totalHandCount;
 			hand.drawHand(drawingHand);
-			imshow("Hand", drawingHand);
+			flip(drawingHand, mirrorHand, 1);
+			imshow("Hand", mirrorHand);
 	
 			detectGestureByMotion(hand);
 			previousHand = hand;
 		}
 
 		// Display the interesting thing
-		imshow("Cam", cameraFrame);
+		imshow("Cam", mirror);
 		char keypress = waitKey(33);
 		if(keypress == 27)
 		{
