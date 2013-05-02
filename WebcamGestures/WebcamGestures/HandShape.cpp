@@ -130,7 +130,7 @@ bool HandShape::determineHandCenter(vector<Point> points, bool cluster = false)
 	float rad=0;
 	if(cluster)
 	{
-		findCluster(points, closest,3);
+		findCluster(points, closest, 4);
 		for(int i = 0; i < closest.size(); i++)
 		{
 			goodThreshold.push_back(points[i]);
@@ -144,7 +144,7 @@ bool HandShape::determineHandCenter(vector<Point> points, bool cluster = false)
 	centroid = center;
 	radius = rad;
 	fingerDistanceMax = 5 * radius;
-	fingerDistanceMin = 1.5 * radius;
+	fingerDistanceMin = 1.2 * radius;
 	if(radius < radiusMin || radius > radiusMax)
 	{
 		return false;
@@ -171,7 +171,7 @@ void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, v
 
 	// Find the centroid of this hand
 	//findCentroid(defectPoints, centroid, radius);
-	if(!determineHandCenter(defectPoints))
+	if(!determineHandCenter(defectPoints, true))
 	{
 		isHand = false;
 		return;
