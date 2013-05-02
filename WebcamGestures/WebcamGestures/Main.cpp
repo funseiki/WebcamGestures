@@ -1,8 +1,8 @@
 /**********************************************
  *	Webcam Gestures using OpenCV
  *		Vinit Shah, Ashwin Shankar, Ashutosh Dhar
- *	Adapted from opencv_handdetect.cpp by Andol Li
- *
+ *	Adaptaption from algorithms proposed/used by this guy
+ *		https://www.youtube.com/watch?v=B4dwu3si9x0
  *********************************************/
 
 /** Includes **/
