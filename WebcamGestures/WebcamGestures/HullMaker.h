@@ -41,7 +41,7 @@ private:
 	bool getDefectsSet(vector<vector<Point> > contours, vector<cv::Vec4i> & defectsSet);
 	void getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> contour,
 					vector<Point> & starts, vector<Point> & ends,
-					vector<Point> & defects);
+					vector<Point> & defects, double threshold);
 	Mat buildImage(vector<vector<Point> > contours, Mat input);
 
 	// Defaults

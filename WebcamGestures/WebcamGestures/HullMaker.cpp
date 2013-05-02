@@ -64,6 +64,50 @@ void HullMaker::MakeHull(Mat input)
 }
 
 // Helper methods
+
+void HullMaker::getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> contour,
+					vector<Point> & starts, vector<Point> & ends,
+					vector<Point> & defects, double threshold = 10)
+{
+	// First figure out what all the depths are
+	vector<double>depths;
+	for (unsigned int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
+	{
+		double depth = (double)convexityDefectsSet[defectIterator].val[3]/256.0f;  // see documentation link below why this
+		depths.push_back(depth);
+	}
+
+	Scalar average_depth = mean(depths);
+
+	//average_depth.val[0]/8;
+
+	vector<double>dists;
+	// defectIterator (Java style, to keep Ashwin happy! ;p
+	// For each defect found
+	for (unsigned int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
+	{
+		// Get the indices from the vector structure returned
+		// Each defect has a start, end and deep point
+		// Also, depth from start to the deep point
+		int startIdx = convexityDefectsSet[defectIterator].val[0];
+		int endIdx = convexityDefectsSet[defectIterator].val[1];
+		int defectPtIdx = convexityDefectsSet[defectIterator].val[2];
+		double depth = (double)convexityDefectsSet[defectIterator].val[3]/256.0f;  // see documentation link below why this
+
+		if(depth >= threshold)
+		{
+			starts.push_back(contour[startIdx]);
+			ends.push_back(contour[endIdx]);
+			defects.push_back(contour[defectPtIdx]);
+			double distx = (contour[startIdx].x - contour[endIdx].x)*(contour[startIdx].x - contour[endIdx].x);
+			double disty = (contour[startIdx].y - contour[endIdx].y)*(contour[startIdx].y - contour[endIdx].y);
+			double dist = sqrt(distx+disty);
+			dists.push_back(dist);
+		}
+	}
+}
+
+
 bool HullMaker::findHull(vector<vector<Point> > contours, Mat input)
 {
 	// Set of convexity defects
@@ -109,48 +153,6 @@ Mat HullMaker::buildImage(vector<vector<Point> > contours, Mat input)
 	}
 
 	return drawing;
-}
-
-void HullMaker::getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> contour,
-					vector<Point> & starts, vector<Point> & ends,
-					vector<Point> & defects)
-{
-	// First figure out what all the depths are
-	vector<double>depths;
-	for (unsigned int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
-	{
-		double depth = (double)convexityDefectsSet[defectIterator].val[3]/256.0f;  // see documentation link below why this
-		depths.push_back(depth);
-	}
-
-	Scalar average_depth = mean(depths);
-
-	double threshold = 10;//average_depth.val[0]/8;
-
-	vector<double>dists;
-	// defectIterator (Java style, to keep Ashwin happy! ;p
-	// For each defect found
-	for (unsigned int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
-	{
-		// Get the indices from the vector structure returned
-		// Each defect has a start, end and deep point
-		// Also, depth from start to the deep point
-		int startIdx = convexityDefectsSet[defectIterator].val[0];
-		int endIdx = convexityDefectsSet[defectIterator].val[1];
-		int defectPtIdx = convexityDefectsSet[defectIterator].val[2];
-		double depth = (double)convexityDefectsSet[defectIterator].val[3]/256.0f;  // see documentation link below why this
-
-		if(depth >= threshold)
-		{
-			starts.push_back(contour[startIdx]);
-			ends.push_back(contour[endIdx]);
-			defects.push_back(contour[defectPtIdx]);
-			double distx = (contour[startIdx].x - contour[endIdx].x)*(contour[startIdx].x - contour[endIdx].x);
-			double disty = (contour[startIdx].y - contour[endIdx].y)*(contour[startIdx].y - contour[endIdx].y);
-			double dist = sqrt(distx+disty);
-			dists.push_back(dist);
-		}
-	}
 }
 
 bool HullMaker::getDefectsSet(vector<vector<Point> > contours, vector<cv::Vec4i> & defectsSet)
