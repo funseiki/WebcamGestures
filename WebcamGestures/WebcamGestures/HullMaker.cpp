@@ -136,7 +136,6 @@ bool HullMaker::findHull(vector<vector<Point> > contours, Mat input)
 	// Determine size of the hull
 	minEnclosingCircle(contours[0], center, radius);
 	hullLength = radius*2;
-	std::cout << "Size of the circle: " << hullLength << std::endl;
 
 	// Set the defect points, we're assuming that we only have the one contour
 	getDefects(defectsSet, contours[0], startPoints, endPoints, defectPoints, hullLength*thresholdRatio);
