@@ -13,6 +13,14 @@ HullMaker::HullMaker(Mat input)
 	MakeHull(input);
 }
 
+HullMaker::HullMaker(Mat input, BackgroundSubtractorMOG2 & bgSub, double learningRate = 0.005)
+{
+	inputImage = subtractBackground(input, bgSub,learningRate);
+	imshow("Subtracted background", inputImage);
+	setDefaults();
+	MakeHull(inputImage);
+}
+
 HullMaker::~HullMaker(void)
 {
 }
@@ -138,7 +146,14 @@ bool HullMaker::findHull(vector<vector<Point> > contours, Mat input)
 	hullLength = radius*2;
 
 	// Set the defect points, we're assuming that we only have the one contour
-	getDefects(defectsSet, contours[0], startPoints, endPoints, defectPoints, hullLength*thresholdRatio);
+	try
+	{
+		getDefects(defectsSet, contours[0], startPoints, endPoints, defectPoints, hullLength*thresholdRatio);
+	}
+	catch(Exception e)
+	{
+		std::cout << "Exception: " << e.what() << std::endl;
+	}
 	if(startPoints.size() <= 3)
 	{
 		return false;
@@ -227,12 +242,9 @@ int HullMaker::findLargestContour(vector<vector<Point> > contours)
 Mat HullMaker::preprocess(Mat input)
 {
 	Mat current, hsv, bw;
-
-	// Convert to grayscale
-	cvtColor(input,current,CV_BGR2GRAY);
-
+	std::vector<std::vector<cv::Point> > contours;
 	// Preprocess the image
-	current = erodeAndDilate(subtractBackground(current));
+	current = input;//erodeAndDilate(subtractBackground(input));
 
 	// Convert to HSV
 	cvtColor(input, hsv, CV_BGR2GRAY);
@@ -246,11 +258,35 @@ Mat HullMaker::preprocess(Mat input)
 Mat HullMaker::erodeAndDilate(Mat input)
 {
 	// TODO: Implement this
-	return input;
+	Mat output;
+	erode(input,output,cv::Mat());
+	dilate(output,output,cv::Mat());
+	return output;
 }
 
-Mat HullMaker::subtractBackground(Mat input)
+Mat HullMaker::subtractBackground(Mat input, BackgroundSubtractorMOG2 & bgSub, double learningRate)
 {
-	// TODO: Implement this
-	return input;
+	Mat resized, yuv, fore, cleaned;
+	resize(input, resized, Size(640,480));
+
+	cvtColor(resized, yuv, CV_BGR2HSV);
+
+	// Feed subtractor new frame and get foreground
+	bgSub.operator ()(yuv,fore,learningRate);
+	
+	// Erode and dilate
+	cleaned = erodeAndDilate(fore);
+
+	// Find and draw Contours
+	findContours(cleaned, contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
+	drawContours(resized, contours, -1, cv::Scalar(0,0,255),2);
+	int s = findLargestContour(contours);
+
+	Mat foreground = Mat::zeros( input.size(), CV_8UC1 );
+	drawContours( foreground, contours, s, Scalar(255), -1, 8);
+
+	Mat bgr(foreground.size(), CV_8UC3, Scalar(0,0,0));
+	//set pixels masked by blackWhite to blue
+	bgr.setTo(Scalar(255,255,255), foreground);
+	return bgr;
 }

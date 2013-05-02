@@ -46,6 +46,29 @@ HandShape::HandShape(Mat image)
 	}
 }
 
+HandShape::HandShape(Mat image, BackgroundSubtractorMOG2 & bgSub, double learningRate)
+{
+	setDefaults();
+	radiusMax = std::min(image.size().width, image.size().height);
+
+	vector<Point> _startPoints;
+	vector<Point> _endPoints;
+	vector<Point> _defectPoints;
+
+	HullMaker hull(image, bgSub, learningRate);
+	hull.getDefectPoints(_startPoints, _endPoints, _defectPoints);
+
+	if(hull.isValidHull())
+	{
+		contourImage = hull.getHullImage();
+		MakeHand(_startPoints, _endPoints, _defectPoints);
+	}
+	else
+	{
+		isHand = false;
+	}
+}
+
 HandShape::~HandShape(void)
 {
 }

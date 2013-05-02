@@ -12,6 +12,7 @@ class HullMaker
 public:
 	HullMaker(void);
 	HullMaker(Mat input);
+	HullMaker(Mat input, BackgroundSubtractorMOG2 & bgSub, double learningRate);
 	~HullMaker(void);
 
 	// Main method
@@ -32,6 +33,7 @@ private:
 	vector<Point> endPoints;
 	vector<Point> defectPoints;
 	vector< vector<Point> > contours;
+	BackgroundSubtractorMOG2 bgSubtractor;
 
 	// Threshold Ratio: A magic number.
 	//		Found that a threshold of ~10 for a hull of ~465-500 produced good results
@@ -42,7 +44,7 @@ private:
 	bool findHull(vector<vector<Point> > contours, Mat input);
 	int findLargestContour(vector<vector<Point> > contours);
 	Mat erodeAndDilate(Mat input);
-	Mat subtractBackground(Mat input);
+	Mat subtractBackground(Mat input, BackgroundSubtractorMOG2 & bgSub, double learningRate);
 	Mat preprocess(Mat input);
 	bool getDefectsSet(vector<vector<Point> > contours, vector<cv::Vec4i> & defectsSet);
 	void getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> contour,

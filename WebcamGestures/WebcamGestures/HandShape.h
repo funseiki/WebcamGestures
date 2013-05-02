@@ -15,6 +15,7 @@ public:
 	HandShape(int fingerCount,Point2f centroid);
 	HandShape(vector<Point> startPoints, vector<Point> endPoints, vector<Point> defectPoints);
 	HandShape(Mat image);
+	HandShape(Mat image, BackgroundSubtractorMOG2 & bgSub, double learningRate);
 	~HandShape(void);
 	void MakeHand(vector<Point> startPoints, vector<Point> endPoints, vector<Point> defectPoints);
 

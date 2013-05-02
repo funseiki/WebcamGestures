@@ -84,18 +84,22 @@ void detectGestureByMotion(HandShape currentHand){
 
 void CameraLoop(std::string filename = "")
 {
-
 	// 2.0 Api
 	VideoCapture camera;
+	int history = 200;
+	float learningRate = 0.001;
+	bool subtractBackground = false;
+	// Create an object of the background subtractor
+	BackgroundSubtractorMOG2 background(history,16,false);
 
 	// Open the camera
-	//camera.open(0);
 	if(filename.length() > 0)
 	{
 		camera.open(filename);
 	}
 	else
 	{
+		subtractBackground = true;
 		camera.open(0);
 	}
 	if(!camera.isOpened())
@@ -105,8 +109,6 @@ void CameraLoop(std::string filename = "")
 	}
 
 	// Set camera parameters
-	//camera.set(CV_CAP_PROP_FRAME_WIDTH, 640);
-	//camera.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
 	int totalHandCount = 0;
 	int validHandCount = 0;
 	
@@ -131,8 +133,18 @@ void CameraLoop(std::string filename = "")
 			std::cerr << "ERROR: NO CAMERA FRAME!?" << std::endl;
 			exit(1);
 		}
-		flip(cameraFrame, mirror, 1);
-		HandShape hand(cameraFrame);
+		HandShape hand;
+
+		// HandShape can handle background subtraction if needed
+		if(subtractBackground)
+		{
+			hand = HandShape(cameraFrame, background, learningRate);
+		}
+		else
+		{
+			hand = HandShape(cameraFrame);
+		}
+
 		Mat drawingContour, drawingHand;
 		if(hand.isValidHand())
 		{
@@ -146,6 +158,8 @@ void CameraLoop(std::string filename = "")
 		}
 
 		// Display the interesting thing
+		flip(cameraFrame, mirror, 1);
+
 		imshow("Cam", mirror);
 		char keypress = waitKey(33);
 		if(keypress == 27)
@@ -184,7 +198,8 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	CameraLoop("VideoDump.avi");
+	CameraLoop();
+	//CameraLoop("VideoDump.avi");
 	//getchar();
 	//SingleImageTest("TestVector\\im2.png");
 }
