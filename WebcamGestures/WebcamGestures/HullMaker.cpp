@@ -125,7 +125,7 @@ void HullMaker::getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> 
 
 	Scalar average_depth = mean(depths);
 
-	double threshold = average_depth.val[0]/10;
+	double threshold = 10;//average_depth.val[0]/8;
 
 	vector<double>dists;
 	// defectIterator (Java style, to keep Ashwin happy! ;p
