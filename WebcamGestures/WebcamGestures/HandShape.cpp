@@ -13,7 +13,6 @@ HandShape::HandShape(void)
 HandShape::HandShape(vector<Point> _startPoints, vector<Point> _endPoints, vector<Point> _defectPoints)
 {
 	setDefaults();
-	fingerThreshold = 15;
 	MakeHand(_startPoints, _endPoints, _defectPoints);
 }
 
@@ -58,9 +57,9 @@ void HandShape::setDefaults()
 	angle = -1;
 	centroid = Point(0,0);
 	middleFinger = Point2f(-1,-1);
-	fingerThreshold = 15;
 	radiusMin = 10;
 	radiusMax = 500;
+	fingerThreshold = 15;
 }
 
 bool HandShape::isValidHand()
@@ -109,6 +108,8 @@ bool HandShape::determineHandCenter(vector<Point> points)
 	findCentroid(closest, center, rad);
 	centroid = center;
 	radius = rad;
+	fingerDistanceMax = 5 * radius;
+	fingerDistanceMin = 1.8 * radius;
 	if(radius < radiusMin || radius > radiusMax)
 	{
 		return false;
@@ -146,10 +147,11 @@ void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, v
 	for (unsigned int i = 0; i < startPoints.size(); i++)
 	{
 		Point currStart = startPoints[i];
-		double curr = distance(currStart, prevEnd);
+		double startToEndDist = distance(currStart, prevEnd);
+		double currToCenterDist = distance(currStart, centroid);
 
 		// The start and end points are close enough to be a finger
-		if(curr < fingerThreshold)
+		if(startToEndDist < fingerThreshold && currToCenterDist < fingerDistanceMax && currToCenterDist > fingerDistanceMin)
 		{
 			fingerCount++;
 			fingerPoints.push_back(currStart);

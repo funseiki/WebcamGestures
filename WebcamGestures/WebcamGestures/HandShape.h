@@ -42,6 +42,8 @@ private:
 	Point2f centroid;
 	float radius;
 	double fingerThreshold;
+	double fingerDistanceMax;
+	double fingerDistanceMin;
 	float radiusMin;
 	float radiusMax;
 
