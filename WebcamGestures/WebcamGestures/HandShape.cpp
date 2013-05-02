@@ -99,13 +99,25 @@ void HandShape::getClosestPoints(Point2f center, vector<Point> points, vector<Po
 	}
 }
 
-bool HandShape::determineHandCenter(vector<Point> points)
+bool HandShape::determineHandCenter(vector<Point> points, bool cluster = false)
 {
 	Point2f center;
-	vector<Point> closest;
+	vector<Point> goodThreshold;
+	vector<int> closest;
 	float rad=0;
-	findCluster(points, closest,3);
-	findCentroid(closest, center, rad);
+	if(cluster)
+	{
+		findCluster(points, closest,3);
+		for(int i = 0; i < closest.size(); i++)
+		{
+			goodThreshold.push_back(points[i]);
+		}
+	}
+	else
+	{
+		goodThreshold = points;
+	}
+	findCentroid(points, center, rad);
 	centroid = center;
 	radius = rad;
 	fingerDistanceMax = 5 * radius;

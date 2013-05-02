@@ -55,7 +55,7 @@ private:
 	vector<Point> defectPoints;
 
 	// Methods
-	bool determineHandCenter(vector<Point> points);
+	bool determineHandCenter(vector<Point> points, bool cluster);
 	void findCentroid(vector<Point> & points,Point2f & center,float & radius);
 	void determineMiddleFinger();
 	double angleBetween(Point2f origin, Point2f onCircle);
