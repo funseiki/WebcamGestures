@@ -121,7 +121,7 @@ bool HandShape::determineHandCenter(vector<Point> points, bool cluster = false)
 	centroid = center;
 	radius = rad;
 	fingerDistanceMax = 5 * radius;
-	fingerDistanceMin = 1.8 * radius;
+	fingerDistanceMin = 1.5 * radius;
 	if(radius < radiusMin || radius > radiusMax)
 	{
 		return false;
