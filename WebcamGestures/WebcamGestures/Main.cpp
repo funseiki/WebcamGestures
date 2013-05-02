@@ -196,5 +196,5 @@ int main()
 {
 	 //CameraLoop();
 	//getchar();
-	SingleImageTest("TestVector\\im4.png");
+	SingleImageTest("TestVector\\im2.png");
 }

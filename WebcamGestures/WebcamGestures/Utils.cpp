@@ -24,7 +24,6 @@ Point2f findCluster(vector <Point> pointData, vector <Point> &clusterPoints, int
 
 	kmeans(points, clusterCount, labels, cv::TermCriteria(), 2,cv::KMEANS_PP_CENTERS, centers);
 
-
 	//std::cout<<"Data: \n"<<points<<std::endl;
 	//std::cout<<"Labels: \n"<<labels<<std::endl;
 
@@ -34,7 +33,7 @@ Point2f findCluster(vector <Point> pointData, vector <Point> &clusterPoints, int
 
 	for(int i=0; i<sampleCount; i++)
 	{
-		int val = labels.at<int>(0,i);
+		int val = labels.at<int>(i);
 		if(val == 0 )
 			labelPt0++;
 		else if(val == 1)
@@ -93,7 +92,7 @@ Point2f findCluster(vector <Point> pointData, vector <Point> &clusterPoints, int
 
 		for(int i=0; i<sampleCount; i++)
 		{
-			int val = labels.at<int>(0,i);
+			int val = labels.at<int>(i);
 
 			if((val == topLabel0) || (val == topLabel1))
 				clusterPoints.push_back(pointData[i]);
@@ -104,7 +103,7 @@ Point2f findCluster(vector <Point> pointData, vector <Point> &clusterPoints, int
 	{
 		for(int i=0; i<sampleCount; i++)
 		{
-			int val = labels.at<int>(0,i);
+			int val = labels.at<int>(i);
 
 			if((val == topCluster0) || (val == topCluster1))
 				clusterPoints.push_back(pointData[i]);
