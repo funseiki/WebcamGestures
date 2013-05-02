@@ -70,7 +70,7 @@ bool HullMaker::findHull(vector<vector<Point> > contours, Mat input)
 	vector<cv::Vec4i> defectsSet(contours.size());
 
 	// If we have an invalid contour, there's nothing we can do
-	if(contours.size() < 1)
+	if(contours.size() < 1 || contours[0].size() <= 3)
 	{
 		return false;
 	}
@@ -180,6 +180,7 @@ bool HullMaker::getDefectsSet(vector<vector<Point> > contours, vector<cv::Vec4i>
 		}
 		catch(Exception e)
 		{
+			std::cout << e.what() << std::endl;
 			return false;
 		}
 	}
