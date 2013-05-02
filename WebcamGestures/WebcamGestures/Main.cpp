@@ -116,7 +116,7 @@ void detectGesture(HandShape currentHandPair){
 	myfile.close();
 }
 
-void CameraLoop()
+void CameraLoop(std::string filename = "")
 {
 
 	// 2.0 Api
@@ -124,7 +124,14 @@ void CameraLoop()
 
 	// Open the camera
 	//camera.open(0);
-	camera.open("VideoDumpForeAsh2.avi");
+	if(filename.length() > 0)
+	{
+		camera.open(filename);
+	}
+	else
+	{
+		camera.open(0);
+	}
 	if(!camera.isOpened())
 	{
 		std::cerr << "ERROR: NO CAMERA AVAILABLE!?" << std::endl;
@@ -149,11 +156,13 @@ void CameraLoop()
 		}
 
 		HandShape hand(cameraFrame);
-		Mat drawing;
+		Mat drawingContour, drawingHand;
 		if(hand.isValidHand())
 		{
-			hand.drawHand(drawing);
-			imshow("Hand", drawing);
+			hand.drawContour(drawingContour);
+			imshow("Contour", drawingContour);
+			hand.drawHand(drawingHand);
+			imshow("Hand", drawingHand);
 			detectGesture(hand);
 		}
 
@@ -181,11 +190,13 @@ int SingleImageTest(std::string filename)
 		return -1;
 	}
 	HandShape hand(src);
-	Mat drawing;
+	Mat drawingContour, drawingHand;
 	if(hand.isValidHand())
 	{
-		hand.drawHand(drawing);
-		imshow("Hand", drawing);
+		hand.drawContour(drawingContour);
+		imshow("Contour", drawingContour);
+		hand.drawHand(drawingHand);
+		imshow("Hand", drawingHand);
 		detectGesture(hand);
 	}
 	imshow("Original", src);
@@ -194,7 +205,7 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	 //CameraLoop();
+	CameraLoop("VideoDumpForeAsh2.avi");
 	//getchar();
-	SingleImageTest("TestVector\\im2.png");
+	//SingleImageTest("TestVector\\im2.png");
 }
