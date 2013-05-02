@@ -198,7 +198,7 @@ int classifyMotion(float Orientation, float thresholdRange, bool isRadians = tru
 
 	if(isNotInRange)
 	{
-		cerr<<"\nNot in Range!\n";
+		//cerr<<"\nNot in Range!\n";
 
 		float distRp = vectorOrientation - Rp;
 		float distRn = Rn - vectorOrientation;
