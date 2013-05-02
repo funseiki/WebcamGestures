@@ -153,7 +153,7 @@ void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, v
 // Utility functions
 double HandShape::angleBetween(Point2f origin, Point2f onCircle)
 {
-	return (double)atan((double)((onCircle.y - origin.y)/ (onCircle.x - origin.x)));
+	return findAngleBetween(origin, onCircle);
 }
 
 double HandShape::distance(Point2f one, Point2f two)
