@@ -35,7 +35,6 @@ Point2f findCluster(vector <Point> pointData, vector <Point> &clusterPoints, int
 	for(int i=0; i<sampleCount; i++)
 	{
 		int val = labels.at<int>(0,i);
-
 		if(val == 0 )
 			labelPt0++;
 		else if(val == 1)
@@ -112,7 +111,7 @@ Point2f findCluster(vector <Point> pointData, vector <Point> &clusterPoints, int
 		}
 	}
 	//std::cout<<"clustered points: "<<clusterPoints.size();
-
+	delete[] pointsdata;
 	return foundCentroid;
 	//return centers;
 }
