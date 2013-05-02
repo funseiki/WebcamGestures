@@ -205,7 +205,7 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	CameraLoop("VideoDumpForeAsh2.avi");
+	CameraLoop("VideoDump.avi");
 	//getchar();
 	//SingleImageTest("TestVector\\im2.png");
 }
