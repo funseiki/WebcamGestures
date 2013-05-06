@@ -275,7 +275,7 @@ Mat HullMaker::subtractBackground(Mat input, BackgroundSubtractorMOG2 & bgSub, d
 	Mat resized, yuv, fore, cleaned;
 	resize(input, resized, Size(640,480));
 
-	cvtColor(resized, yuv, CV_BGR2HSV);
+	cvtColor(resized, yuv, CV_BGR2YCrCb);
 
 	// Feed subtractor new frame and get foreground
 	bgSub.operator ()(yuv,fore,learningRate);
