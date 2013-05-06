@@ -15,10 +15,11 @@ HullMaker::HullMaker(Mat input)
 
 HullMaker::HullMaker(Mat input, BackgroundSubtractorMOG2 & bgSub, double learningRate = 0.005)
 {
-	inputImage = subtractBackground(input, bgSub,learningRate);
+	inputImage = input;
+	Mat bgImage = subtractBackground(input, bgSub,learningRate);
 	imshow("Subtracted background", inputImage);
 	setDefaults();
-	MakeHull(inputImage);
+	MakeHull(bgImage);
 }
 
 HullMaker::~HullMaker(void)
@@ -170,7 +171,7 @@ bool HullMaker::findHull(vector<vector<Point> > contours, Mat input)
 Mat HullMaker::buildImage(vector<vector<Point> > contours, Mat input)
 {
 	vector< vector<Point> > hull(contours.size());
-	Mat drawing(input.size(), CV_8UC3);
+	Mat drawing = input.clone();
 
 	// Find hull of each contour (should be just 1 in this case)
 	for(unsigned int i = 0; i < contours.size(); i++ )
