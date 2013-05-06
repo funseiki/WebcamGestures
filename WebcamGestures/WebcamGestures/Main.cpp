@@ -42,7 +42,7 @@ void getGesture(){
 		
 		std::cout << "Gesture finger count : " << startPoint.getfingerCount();
 		std::cout << "  Motion : "<<directionStr<< std::endl;
-		waitKey(0);
+		//waitKey(0);
 }
 
 void setAverageCentroid(){
