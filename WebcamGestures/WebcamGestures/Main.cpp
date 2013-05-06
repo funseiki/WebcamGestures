@@ -82,7 +82,7 @@ void detectGestureByMotion(HandShape currentHand){
 	if(hands.size() > BUFFER_SIZE) hands.erase(hands.begin());
 }
 
-void CameraLoop(std::string filename = "")
+void CameraLoop(std::string filename = "", std::string outfile = "")
 {
 	// 2.0 Api
 	VideoCapture camera;
@@ -91,11 +91,17 @@ void CameraLoop(std::string filename = "")
 	bool subtractBackground = false;
 	// Create an object of the background subtractor
 	BackgroundSubtractorMOG2 background(history,16,false);
-
+	int ex = CV_FOURCC('P', 'I', 'M', '1');
+	Size S = Size(640, 480);
+	double framerate = 20;
 	// Open the camera
 	if(filename.length() > 0)
 	{
 		camera.open(filename);
+		ex = static_cast<int>(camera.get(CV_CAP_PROP_FOURCC));
+		S = Size((int) camera.get(CV_CAP_PROP_FRAME_WIDTH),    //Acquire input size
+				  (int) camera.get(CV_CAP_PROP_FRAME_HEIGHT));
+		framerate = camera.get(CV_CAP_PROP_FPS);
 	}
 	else
 	{
@@ -106,6 +112,17 @@ void CameraLoop(std::string filename = "")
 	{
 		std::cerr << "ERROR: NO CAMERA AVAILABLE!?" << std::endl;
 		return;
+	}
+
+	VideoWriter writer;
+	if(outfile.length() > 0)
+	{
+		writer.open(outfile, ex, framerate, S, true);
+		if(!writer.isOpened())
+		{
+			std::cerr << "Output video not available" << std::endl;
+			return;
+		}
 	}
 
 	// Set camera parameters
@@ -152,15 +169,18 @@ void CameraLoop(std::string filename = "")
 			hand.drawHand(drawingHand);
 			flip(drawingHand, mirrorHand, 1);
 			imshow("Hand", mirrorHand);
-	
+			writer << mirrorHand;
 			detectGestureByMotion(hand);
 			previousHand = hand;
 		}
+		else
+		{
+			// Display the interesting thing
+			flip(cameraFrame, mirror, 1);
 
-		// Display the interesting thing
-		flip(cameraFrame, mirror, 1);
-
-		imshow("Cam", mirror);
+			imshow("Hand", mirror);
+			writer << mirror;
+		}
 		char keypress = waitKey(33);
 		if(keypress == 27)
 		{
@@ -198,7 +218,7 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	CameraLoop();
+	CameraLoop("", "Output\\Out.avi");
 	//CameraLoop("VideoDump.avi");
 	//getchar();
 	//SingleImageTest("TestVector\\im2.png");
