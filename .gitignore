@@ -8,6 +8,7 @@
 # /WebcamGestures/WebcamGestures
 /WebcamGestures/WebcamGestures/Debug
 /WebcamGestures/WebcamGestures/Release
+/WebcamGestures/WebcamGestures/Output
 /WebcamGestures/WebcamGestures/*.avi
 /WebcamGestures/WebcamGestures/*.jpg
 /WebcamGestures/WebcamGestures/example.txt
