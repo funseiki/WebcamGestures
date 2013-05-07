@@ -239,7 +239,7 @@ int SingleImageTest(std::string filename)
 
 int main()
 {
-	CameraLoop("", "Output\\Out.avi");
+	CameraLoop();
 	//CameraLoop("VideoDump.avi");
 	//getchar();
 	//SingleImageTest("TestVector\\im5.png");
