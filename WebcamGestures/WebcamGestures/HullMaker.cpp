@@ -18,7 +18,6 @@ HullMaker::HullMaker(Mat input, BackgroundSubtractorMOG2 & bgSub, double learnin
 {
 	inputImage = input;
 	Mat bgImage = subtractBackground(input, bgSub,learningRate);
-	imshow("Subtracted background", inputImage);
 	setDefaults();
 	MakeHull(bgImage);
 }
