@@ -38,6 +38,7 @@ HandShape::HandShape(Mat image)
 	if(hull.isValidHull())
 	{
 		contourImage = hull.getHullImage();
+		fgContours = hull.getForegroundContours();
 		MakeHand(_startPoints, _endPoints, _defectPoints);
 	}
 	else
@@ -57,7 +58,7 @@ HandShape::HandShape(Mat image, BackgroundSubtractorMOG2 & bgSub, double learnin
 
 	HullMaker hull(image, bgSub, learningRate);
 	hull.getDefectPoints(_startPoints, _endPoints, _defectPoints);
-
+	fgContours = hull.getForegroundContours();
 	if(hull.isValidHull())
 	{
 		contourImage = hull.getHullImage();
@@ -73,6 +74,7 @@ HandShape::~HandShape(void)
 {
 }
 
+// Sets default valeus
 void HandShape::setDefaults()
 {
 	isHand = false;
@@ -85,11 +87,15 @@ void HandShape::setDefaults()
 	fingerThreshold = 20;
 }
 
+// Getter
 bool HandShape::isValidHand()
 {
 	return isHand;
 }
 
+/**	determineMiddleFinger
+ *		generates a middle point from the detected fingers
+ **/
 void HandShape::determineMiddleFinger()
 {
 	float rad;
@@ -98,6 +104,9 @@ void HandShape::determineMiddleFinger()
 	findCentroid(fingerPoints, middleFinger, rad);
 }
 
+/** getClosestPoints
+ *		Find the points closest points to the center
+ **/
 void HandShape::getClosestPoints(Point2f center, vector<Point> points, vector<Point> & out, int threshold=5)
 {
 	priority_queue<QueuePoint> pq;
@@ -122,6 +131,11 @@ void HandShape::getClosestPoints(Point2f center, vector<Point> points, vector<Po
 	}
 }
 
+/** determineHandCenter
+ * Places a minimum enclosing circle around the given points
+ *	cluster: If true, uses k-means clustering and to determine a subset of points to use
+ *		in determine the enclosing circle
+ **/
 bool HandShape::determineHandCenter(vector<Point> points, bool cluster = false)
 {
 	Point2f center;
@@ -130,7 +144,7 @@ bool HandShape::determineHandCenter(vector<Point> points, bool cluster = false)
 	float rad=0;
 	if(cluster)
 	{
-		findCluster(points, closest, 4);
+		findCluster(points, closest, 3);
 		for(int i = 0; i < closest.size(); i++)
 		{
 			goodThreshold.push_back(points[i]);
@@ -156,6 +170,10 @@ bool HandShape::determineHandCenter(vector<Point> points, bool cluster = false)
 }
 
 // Helpers
+
+/**	MakeHand
+ *		"Main" function - calls helper functions to determine hand parameters
+ **/
 void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, vector<Point> _defectPoints)
 {
 	if(!_startPoints.size() || !_endPoints.size() || !_defectPoints.size())
@@ -163,7 +181,6 @@ void HandShape::MakeHand(vector<Point> _startPoints, vector<Point> _endPoints, v
 		isHand = false;
 		return;
 	}
-
 	startPoints = _startPoints;
 	endPoints = _endPoints;
 	defectPoints = _defectPoints;
@@ -212,6 +229,7 @@ double HandShape::distance(Point2f one, Point2f two)
 	return sqrt(((one.x - two.x)*(one.x - two.x))+((one.y - two.y)*(one.y - two.y)));
 }
 
+// Determine a central point and radius from the input points
 void HandShape::findCentroid(vector<Point> & points,Point2f & center,float & radius)
 {
 	if(points.size() > 0)
@@ -224,6 +242,12 @@ void HandShape::findCentroid(vector<Point> & points,Point2f & center,float & rad
 		center.y = -1;
 		radius = -1;
 	}
+}
+
+// Displayers
+void HandShape::drawForegroundContours(Mat & drawing)
+{
+	drawContours(drawing, fgContours, -1, Scalar(0, 0, 255), 2);
 }
 
 void HandShape::drawHand(Mat & drawing)
@@ -245,8 +269,6 @@ void HandShape::drawHand(Mat & drawing)
 	}
 }
 
-
-// Displayers
 void HandShape::drawContour(Mat & drawing)
 {
 	if(contourImage.size().width > 0)

@@ -31,6 +31,7 @@ public:
 	// Displayers
 	void drawContour(Mat & drawing);
 	void drawHand(Mat & drawing);
+	void drawForegroundContours(Mat & drawing);
 
 private:
 	// Members
@@ -54,6 +55,9 @@ private:
 	vector<Point> startPoints;
 	vector<Point> endPoints;
 	vector<Point> defectPoints;
+
+	// Foreground Contour (with artifacts)
+	vector< vector<Point> > fgContours;
 
 	// Methods
 	bool determineHandCenter(vector<Point> points, bool cluster);

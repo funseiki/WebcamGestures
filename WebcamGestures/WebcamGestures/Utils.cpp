@@ -2,6 +2,7 @@
 
 using namespace std;
 
+// Determine a subset of points
 Point2f findCluster(vector <Point> pointData, vector <int> &clusterPoints, int clusterCount =3 )
 {
 	int sampleCount = pointData.size();
@@ -115,6 +116,7 @@ Point2f findCluster(vector <Point> pointData, vector <int> &clusterPoints, int c
 	//return centers;
 }
 
+// Determine in what direction the vector is pointing
 int classifyMotion(float Orientation, float thresholdRange, bool isRadians = true, bool showRange = false)
 {
 	float pi;
@@ -247,6 +249,7 @@ int classifyMotion(float Orientation, float thresholdRange, bool isRadians = tru
 		return RIGHT;
 }
 
+// Helper function
 double findDistanceBetween(Point2f one, Point2f two) {
 	return sqrt(((one.x - two.x)*(one.x - two.x))+((one.y - two.y)*(one.y - two.y)));
 }

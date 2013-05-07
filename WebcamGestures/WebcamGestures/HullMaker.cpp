@@ -1,4 +1,5 @@
 #include "HullMaker.h"
+#include "Utils.h"
 
 
 HullMaker::HullMaker(void)
@@ -62,7 +63,15 @@ float HullMaker::getHullLength()
 	return hullLength;
 }
 
-// Main method
+vector< vector<Point> > HullMaker::getForegroundContours()
+{
+	return fgContours;
+}
+
+/* Main method
+ *	Generates a hull or sets isValid to false
+ *
+ **/
 void HullMaker::MakeHull(Mat input)
 {
 	vector<Vec4i> hierarchy;
@@ -80,6 +89,9 @@ void HullMaker::MakeHull(Mat input)
 
 // Helper methods
 
+/** getDefects
+ *		Outputs the start, end, and defect points (after pruning) from the convexity set
+ **/
 void HullMaker::getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> contour,
 					vector<Point> & starts, vector<Point> & ends,
 					vector<Point> & defects, double threshold = 10)
@@ -92,11 +104,9 @@ void HullMaker::getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> 
 		depths.push_back(depth);
 	}
 
-	Scalar average_depth = mean(depths);
-
-	//average_depth.val[0]/8;
-
 	vector<double>dists;
+	unsigned int count = 0;
+
 	// defectIterator (Java style, to keep Ashwin happy! ;p
 	// For each defect found
 	for (unsigned int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
@@ -108,28 +118,44 @@ void HullMaker::getDefects(vector<cv::Vec4i> convexityDefectsSet, vector<Point> 
 		int endIdx = convexityDefectsSet[defectIterator].val[1];
 		int defectPtIdx = convexityDefectsSet[defectIterator].val[2];
 		double depth = (double)convexityDefectsSet[defectIterator].val[3]/256.0f;  // see documentation link below why this
+		if(depth >= threshold)
+		{
+			count++;
+		}
+	}
 
+	if(count < 3)
+	{
+		threshold = 0;
+
+	}
+	for (unsigned int defectIterator = 0; defectIterator < convexityDefectsSet.size(); defectIterator++)
+	{
+		int startIdx = convexityDefectsSet[defectIterator].val[0];
+		int endIdx = convexityDefectsSet[defectIterator].val[1];
+		int defectPtIdx = convexityDefectsSet[defectIterator].val[2];
+		double depth = (double)convexityDefectsSet[defectIterator].val[3]/256.0f;  // see documentation link below why this
 		if(depth >= threshold)
 		{
 			starts.push_back(contour[startIdx]);
 			ends.push_back(contour[endIdx]);
 			defects.push_back(contour[defectPtIdx]);
-			double distx = (contour[startIdx].x - contour[endIdx].x)*(contour[startIdx].x - contour[endIdx].x);
-			double disty = (contour[startIdx].y - contour[endIdx].y)*(contour[startIdx].y - contour[endIdx].y);
-			double dist = sqrt(distx+disty);
-			dists.push_back(dist);
 		}
 	}
+
 }
 
 
+/** findHull
+ *		Wrapper function around getDefects - does some input checking
+ **/
 bool HullMaker::findHull(vector<vector<Point> > contours, Mat input)
 {
 	// Set of convexity defects
 	vector<cv::Vec4i> defectsSet(contours.size());
 
 	// If we have an invalid contour, there's nothing we can do
-	if(contours.size() < 1 || contours[0].size() <= 4)
+	if(contours.size() < 1 || contours[0].size() < 3)
 	{
 		return false;
 	}
@@ -147,27 +173,28 @@ bool HullMaker::findHull(vector<vector<Point> > contours, Mat input)
 	hullLength = radius*2;
 	double contourSize = contourArea(contours[0]);
 	//std::cout << "Contour area: " << contourSize << std::endl;
-	if(contourSize < 10000)
+	/*if(contourSize < 10000)
 	{
 		return false;
-	}
+	}*/
 
 	// Set the defect points, we're assuming that we only have the one contour
 	try
 	{
-		getDefects(defectsSet, contours[0], startPoints, endPoints, defectPoints, hullLength*thresholdRatio);
+		getDefects(defectsSet, contours[0], startPoints, endPoints, defectPoints,15);// hullLength*thresholdRatio);
 	}
 	catch(Exception e)
 	{
 		std::cout << "Exception: " << e.what() << std::endl;
 	}
-	if(startPoints.size() <= 4)
+	if(startPoints.size() < 3)
 	{
 		return false;
 	}
 	return true;
 }
 
+// Drawing helper function
 Mat HullMaker::buildImage(vector<vector<Point> > contours, Mat input)
 {
 	vector< vector<Point> > hull(contours.size());
@@ -189,6 +216,7 @@ Mat HullMaker::buildImage(vector<vector<Point> > contours, Mat input)
 	return drawing;
 }
 
+// Helper function to determine the convexity set
 bool HullMaker::getDefectsSet(vector<vector<Point> > contours, vector<cv::Vec4i> & defectsSet)
 {
 	/* Each Defect is a vector of 4 elements
@@ -224,6 +252,7 @@ bool HullMaker::getDefectsSet(vector<vector<Point> > contours, vector<cv::Vec4i>
 	return true;
 }
 
+// Helper function to get the largest contour given a vector of contours
 int HullMaker::findLargestContour(vector<vector<Point> > contours, unsigned int & sizeOfBiggestContour)
 {
 	// Index of largest contour
@@ -246,6 +275,7 @@ int HullMaker::findLargestContour(vector<vector<Point> > contours, unsigned int 
 	return indexOfBiggestContour;
 }
 
+// Helper function - formats the image to be used with the rest of the functions
 Mat HullMaker::preprocess(Mat input)
 {
 	Mat current, hsv, bw;
@@ -271,6 +301,7 @@ Mat HullMaker::erodeAndDilate(Mat input)
 	return output;
 }
 
+// Used if a background subtracter is given - subtracts out the background and gives a foreground
 Mat HullMaker::subtractBackground(Mat input, BackgroundSubtractorMOG2 & bgSub, double learningRate)
 {
 	Mat resized, yuv, fore, cleaned;
@@ -285,14 +316,15 @@ Mat HullMaker::subtractBackground(Mat input, BackgroundSubtractorMOG2 & bgSub, d
 	cleaned = erodeAndDilate(fore);
 
 	// Find and draw Contours
-	findContours(cleaned, contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
-	drawContours(resized, contours, -1, cv::Scalar(0,0,255),2);
+	findContours(cleaned, fgContours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
+
+//	drawContours(resized, fgContours, -1, cv::Scalar(0,0,255),2);
 	unsigned int contourSize;
-	int s = findLargestContour(contours, contourSize);
+	int s = findLargestContour(fgContours, contourSize);
 
 	Mat foreground = Mat::zeros( input.size(), CV_8UC1 );
-	drawContours( foreground, contours, s, Scalar(255), -1, 8);
-	imshow("Foregound", resized);
+	drawContours( foreground, fgContours, s, Scalar(255), -1, 8);
+	//imshow("Foregound", resized);
 
 	Mat bgr(foreground.size(), CV_8UC3, Scalar(0,0,0));
 

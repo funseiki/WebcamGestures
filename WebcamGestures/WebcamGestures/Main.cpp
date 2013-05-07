@@ -29,6 +29,8 @@ Point2f averageStartCentroid;
 Point2f averageEndCentroid;
 HandShape previousHand;
 int countStillFrame = 0;
+
+// Classify gesture detected
 void getGesture(){
 		float angle = findAngleBetween(averageStartCentroid, averageEndCentroid);//atan2(averageStartCentroid.y - averageEndCentroid.y, averageStartCentroid.x - averageEndCentroid.x);
 		
@@ -45,6 +47,7 @@ void getGesture(){
 		//waitKey(0);
 }
 
+// Set the global centroid from our frame buffer
 void setAverageCentroid(){
 
 	float totalX = 0;
@@ -63,6 +66,7 @@ void setAverageCentroid(){
 	}
 }
 
+// Find our gesture
 void detectGestureByMotion(HandShape currentHand){
 	if(state == 0) { //Not started tracking 
 		int dist = findDistanceBetween(currentHand.getCentroid(),previousHand.getCentroid());
@@ -82,18 +86,23 @@ void detectGestureByMotion(HandShape currentHand){
 	if(hands.size() > BUFFER_SIZE) hands.erase(hands.begin());
 }
 
+// Main loop
 void CameraLoop(std::string filename = "", std::string outfile = "")
 {
 	// 2.0 Api
 	VideoCapture camera;
-	int history = 500;
-	float learningRate = 0.0008;
+	int history = 300;
+	float learningRate = 0.0001;
 	bool subtractBackground = false;
+
 	// Create an object of the background subtractor
 	BackgroundSubtractorMOG2 background(history,16,false);
+
+	// Camera Parameters
 	int ex = CV_FOURCC('P', 'I', 'M', '1');
 	Size S = Size(640, 480);
 	double framerate = 20;
+
 	// Open the camera
 	if(filename.length() > 0)
 	{
@@ -131,6 +140,7 @@ void CameraLoop(std::string filename = "", std::string outfile = "")
 	
 	while(true)
 	{
+		// Use this for tracking
 		totalHandCount++;
 		if((totalHandCount - validHandCount) > 10 && state == 1){
 			setAverageCentroid();
@@ -140,10 +150,16 @@ void CameraLoop(std::string filename = "", std::string outfile = "")
 			previousHand.~HandShape();
 			new(&previousHand) HandShape();
 		}
+
+		// Image matrices for display purposes
 		Mat cameraFrame, mirror, mirrorHand;
 
 		// Gets the current camera frame
 		camera >> cameraFrame;
+
+		// Foreground matrix to display detected foreground contours
+		Mat fg;
+		resize(cameraFrame, fg, Size(640,480));
 
 		if(cameraFrame.empty())
 		{
@@ -163,21 +179,25 @@ void CameraLoop(std::string filename = "", std::string outfile = "")
 		}
 
 		Mat drawingContour, drawingHand;
+
+		// Draw the hand if it's valid
 		if(hand.isValidHand())
 		{
 			validHandCount = totalHandCount;
 			hand.drawHand(drawingHand);
+
+			hand.drawForegroundContours(drawingHand);
 			flip(drawingHand, mirrorHand, 1);
 			imshow("Hand", mirrorHand);
 			writer << mirrorHand;
 			detectGestureByMotion(hand);
 			previousHand = hand;
-		}
-		else
-		{
-			// Display the interesting thing
-			flip(cameraFrame, mirror, 1);
 
+		}
+		else  // Otherwise just draw the camera frame
+		{
+			hand.drawForegroundContours(fg);
+			flip(fg, mirror, 1);
 			imshow("Hand", mirror);
 			writer << mirror;
 		}
@@ -193,6 +213,7 @@ void CameraLoop(std::string filename = "", std::string outfile = "")
 	}
 }
 
+// Single image test requires a black and white image where the background is subtracted
 int SingleImageTest(std::string filename)
 {
 	// Open image
@@ -221,5 +242,5 @@ int main()
 	CameraLoop("", "Output\\Out.avi");
 	//CameraLoop("VideoDump.avi");
 	//getchar();
-	//SingleImageTest("TestVector\\im2.png");
+	//SingleImageTest("TestVector\\im5.png");
 }

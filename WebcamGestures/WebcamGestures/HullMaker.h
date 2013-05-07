@@ -23,6 +23,7 @@ public:
 	void getDefectPoints(vector<Point> & starts, vector<Point> & ends, vector<Point> & defects);
 	bool isValidHull();
 	float getHullLength();
+	vector< vector<Point> > getForegroundContours();
 
 private:
 	// Members
@@ -33,6 +34,7 @@ private:
 	vector<Point> endPoints;
 	vector<Point> defectPoints;
 	vector< vector<Point> > contours;
+	vector< vector<Point> > fgContours;
 	BackgroundSubtractorMOG2 bgSubtractor;
 
 	// Threshold Ratio: A magic number.
